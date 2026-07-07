@@ -1,6 +1,6 @@
 <div align="center">
 
-<img src="logo.png" alt="FitraShield Logo" width="160" height="160" />
+<img src="logo.png?v=1.0.1" alt="FitraShield Logo" width="160" height="160" />
 
 # 🛡️ درع الفطرة — FitraShield
 
