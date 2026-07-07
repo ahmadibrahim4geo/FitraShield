@@ -1,0 +1,9 @@
+{
+  "name": "com.fitrashield.helper",
+  "description": "FitraShield Parental Control Logs Native Helper",
+  "path": "C:\\\\Users\\\\ahmad\\\\Desktop\\\\FitraShield\\\\helper.bat",
+  "type": "stdio",
+  "allowed_origins": [
+    "chrome-extension://heebhjdomkeljeamfahdiflliejncnnb/"
+  ]
+}

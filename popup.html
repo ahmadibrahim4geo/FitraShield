@@ -1,0 +1,501 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="utf-8">
+  <title>درع الفطرة | FitraShield</title>
+  <!-- استيراد خطوط Google Fonts للتصميم -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&family=Outfit:wght@400;600;800&display=swap" rel="stylesheet">
+
+  <style>
+    /* ===== المتغيرات الأساسية للتصميم ===== */
+    :root {
+      --bg-main: #0f172a;
+      --bg-card: rgba(30, 41, 59, 0.85);
+      --accent: #0d9488;
+      --accent-hover: #14b8a6;
+      --accent-glow: rgba(13, 148, 136, 0.35);
+      --text-main: #f8fafc;
+      --text-muted: #94a3b8;
+      --border-color: rgba(255, 255, 255, 0.1);
+      --danger-color: #ef4444;
+      --success-color: #22c55e;
+    }
+
+    /* ===== إعادة ضبط عامة ===== */
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      width: 320px;
+      min-height: 100px;
+      font-family: 'Cairo', 'Outfit', sans-serif;
+      background: linear-gradient(160deg, var(--bg-main) 0%, #022c22 100%);
+      color: var(--text-main);
+      direction: rtl;
+      overflow-x: hidden;
+    }
+
+    /* ===== الحاوية الرئيسية ===== */
+    .popup-wrap {
+      padding: 20px;
+    }
+
+    /* ===== الترويسة (الشعار + العنوان) ===== */
+    .popup-header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 18px;
+    }
+
+    .popup-logo {
+      width: 38px;
+      height: 38px;
+      fill: none;
+      stroke: var(--accent);
+      stroke-width: 2;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+      filter: drop-shadow(0 0 8px var(--accent-glow));
+      flex-shrink: 0;
+    }
+
+    .popup-title {
+      font-size: 15px;
+      font-weight: 900;
+      background: linear-gradient(to left, #2dd4bf, var(--accent));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      line-height: 1.3;
+    }
+
+    .popup-subtitle {
+      font-size: 10px;
+      color: var(--text-muted);
+      font-weight: 400;
+    }
+
+    /* ===== شاشة الإعداد الأولي (لا توجد كلمة مرور) ===== */
+    .screen {
+      display: none;
+    }
+
+    .screen.active {
+      display: block;
+      animation: fadeIn 0.35s ease-out;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(6px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* رسالة إعلامية للإعداد */
+    .setup-msg {
+      background: rgba(217, 119, 6, 0.1);
+      border: 1px dashed rgba(217, 119, 6, 0.4);
+      border-radius: 12px;
+      padding: 14px;
+      text-align: center;
+      font-size: 12px;
+      color: #f59e0b;
+      line-height: 1.7;
+    }
+
+    .setup-msg strong {
+      display: block;
+      font-size: 13px;
+      margin-bottom: 4px;
+    }
+
+    .setup-btn-link {
+      display: inline-block;
+      margin-top: 10px;
+      background: rgba(217, 119, 6, 0.2);
+      border: 1px solid rgba(217, 119, 6, 0.3);
+      color: #fbbf24;
+      padding: 7px 18px;
+      border-radius: 10px;
+      font-family: 'Cairo', sans-serif;
+      font-size: 12px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.3s;
+    }
+
+    .setup-btn-link:hover {
+      background: rgba(217, 119, 6, 0.35);
+    }
+
+    /* ===== شاشة تسجيل الدخول ===== */
+    .login-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: 16px;
+      padding: 18px;
+      backdrop-filter: blur(12px);
+    }
+
+    .login-title {
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--text-muted);
+      margin-bottom: 12px;
+      text-align: center;
+    }
+
+    .login-input {
+      width: 100%;
+      padding: 10px 14px;
+      background: rgba(15, 23, 42, 0.8);
+      border: 1px solid var(--border-color);
+      border-radius: 12px;
+      color: var(--text-main);
+      font-size: 14px;
+      font-family: 'Cairo', sans-serif;
+      direction: ltr;
+      text-align: center;
+      transition: all 0.3s;
+    }
+
+    .login-input:focus {
+      outline: none;
+      border-color: var(--accent);
+      box-shadow: 0 0 10px var(--accent-glow);
+    }
+
+    .login-input::placeholder {
+      color: var(--text-muted);
+      opacity: 0.5;
+    }
+
+    .login-error {
+      font-size: 11px;
+      color: var(--danger-color);
+      text-align: center;
+      margin-top: 8px;
+      min-height: 16px;
+    }
+
+    /* ===== الأزرار ===== */
+    .btn {
+      width: 100%;
+      padding: 10px 12px;
+      border: none;
+      border-radius: 12px;
+      font-size: 13px;
+      font-weight: 700;
+      font-family: 'Cairo', sans-serif;
+      cursor: pointer;
+      transition: all 0.25s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+
+    .btn-primary {
+      background: var(--accent);
+      color: white;
+      margin-top: 12px;
+    }
+
+    .btn-primary:hover {
+      background: var(--accent-hover);
+      transform: translateY(-1px);
+      box-shadow: 0 4px 15px var(--accent-glow);
+    }
+
+    .btn-action {
+      background: rgba(255, 255, 255, 0.06);
+      color: var(--text-main);
+      border: 1px solid var(--border-color);
+      margin-bottom: 8px;
+    }
+
+    .btn-action:hover {
+      background: rgba(255, 255, 255, 0.1);
+      border-color: rgba(255, 255, 255, 0.18);
+      transform: translateY(-1px);
+    }
+
+    .btn-action.block-btn:hover {
+      border-color: rgba(239, 68, 68, 0.3);
+      background: rgba(239, 68, 68, 0.08);
+    }
+
+    .btn-action.lock-btn {
+      color: var(--text-muted);
+      font-size: 12px;
+      margin-bottom: 0;
+    }
+
+    .btn-action.lock-btn:hover {
+      color: var(--danger-color);
+      border-color: rgba(239, 68, 68, 0.25);
+      background: rgba(239, 68, 68, 0.06);
+    }
+
+    .btn-icon {
+      font-size: 15px;
+      line-height: 1;
+    }
+
+    /* ===== مؤشر حالة الدرع ===== */
+    .shield-status {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      background: rgba(13, 148, 136, 0.08);
+      border: 1px solid rgba(13, 148, 136, 0.2);
+      border-radius: 12px;
+      padding: 12px 14px;
+      margin-bottom: 16px;
+    }
+
+    .status-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: var(--success-color);
+      box-shadow: 0 0 8px rgba(34, 197, 94, 0.6);
+      animation: pulseDot 2s infinite ease-in-out;
+      flex-shrink: 0;
+    }
+
+    @keyframes pulseDot {
+      0%, 100% {
+        box-shadow: 0 0 6px rgba(34, 197, 94, 0.5);
+        transform: scale(1);
+      }
+      50% {
+        box-shadow: 0 0 14px rgba(34, 197, 94, 0.9);
+        transform: scale(1.15);
+      }
+    }
+
+    .status-text {
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--success-color);
+      line-height: 1.4;
+    }
+
+    .status-sub {
+      font-size: 10px;
+      color: var(--text-muted);
+      font-weight: 400;
+    }
+
+    /* ===== أيقونة الدرع المركزية ===== */
+    .shield-center {
+      text-align: center;
+      margin-bottom: 16px;
+    }
+
+    .shield-svg {
+      width: 64px;
+      height: 64px;
+      fill: none;
+      stroke: var(--accent);
+      stroke-width: 1.8;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+      filter: drop-shadow(0 0 12px var(--accent-glow));
+      animation: shieldGlow 3s infinite ease-in-out;
+    }
+
+    @keyframes shieldGlow {
+      0%, 100% {
+        filter: drop-shadow(0 0 10px rgba(13, 148, 136, 0.4));
+        stroke: var(--accent);
+      }
+      50% {
+        filter: drop-shadow(0 0 22px rgba(13, 148, 136, 0.8));
+        stroke: #2dd4bf;
+      }
+    }
+
+    /* ===== إحصائيات صغيرة ===== */
+    .stats-bar {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 6px;
+      background: rgba(15, 23, 42, 0.5);
+      border: 1px solid var(--border-color);
+      border-radius: 10px;
+      padding: 8px 12px;
+      margin-top: 12px;
+    }
+
+    .stats-label {
+      font-size: 11px;
+      color: var(--text-muted);
+    }
+
+    .stats-count {
+      font-family: 'Outfit', monospace;
+      font-size: 15px;
+      font-weight: 800;
+      color: var(--accent-hover);
+      min-width: 20px;
+      text-align: center;
+    }
+
+    /* ===== الفاصل ===== */
+    .divider {
+      height: 1px;
+      background: var(--border-color);
+      margin: 14px 0;
+    }
+
+    /* ===== رسالة التنبيه المنبثقة (Toast) ===== */
+    .toast {
+      position: fixed;
+      bottom: 12px;
+      left: 50%;
+      transform: translateX(-50%) translateY(20px);
+      background: rgba(13, 148, 136, 0.95);
+      color: white;
+      padding: 8px 20px;
+      border-radius: 99px;
+      font-size: 12px;
+      font-weight: 600;
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.35);
+      z-index: 999;
+      opacity: 0;
+      transition: opacity 0.3s, transform 0.3s;
+      pointer-events: none;
+      white-space: nowrap;
+      font-family: 'Cairo', sans-serif;
+    }
+
+    .toast.show {
+      opacity: 1;
+      transform: translateX(-50%) translateY(0);
+    }
+
+    .toast.error {
+      background: rgba(239, 68, 68, 0.95);
+    }
+
+    .toast.success {
+      background: rgba(13, 148, 136, 0.95);
+    }
+
+    /* ===== حالة تعطيل الزر أثناء المعالجة ===== */
+    .btn:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+      transform: none !important;
+    }
+  </style>
+</head>
+<body>
+  <div class="popup-wrap">
+
+    <!-- ===== الترويسة الثابتة (الشعار + العنوان) ===== -->
+    <div class="popup-header">
+      <svg class="popup-logo" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+        <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+      </svg>
+      <div>
+        <div class="popup-title">درع الفطرة</div>
+        <div class="popup-subtitle">FitraShield — حماية أبوية محلية</div>
+      </div>
+    </div>
+
+    <!-- ==================== شاشة 1: لم يتم تعيين كلمة مرور بعد ==================== -->
+    <div id="screen-setup" class="screen">
+      <div class="setup-msg">
+        <strong>⚙️ الإعداد الأولي مطلوب</strong>
+        لم يتم تعيين كلمة مرور رئيسية بعد. يرجى فتح لوحة التحكم لإعداد الحماية وتعيين كلمة مرور قوية للآباء.
+        <button id="btn-open-setup" class="setup-btn-link">فتح لوحة التحكم للإعداد ⚙️</button>
+      </div>
+    </div>
+
+    <!-- ==================== شاشة 2: بوابة تسجيل الدخول ==================== -->
+    <div id="screen-login" class="screen">
+      <div class="login-card">
+        <div class="login-title">🔒 أدخل كلمة المرور الرئيسية</div>
+        <input
+          type="password"
+          id="input-password"
+          class="login-input"
+          placeholder="••••••••"
+          autocomplete="off"
+        >
+        <div id="login-error" class="login-error"></div>
+        <button id="btn-login" class="btn btn-primary">
+          <span class="btn-icon">🔓</span>
+          تسجيل الدخول
+        </button>
+      </div>
+    </div>
+
+    <!-- ==================== شاشة 3: اللوحة الرئيسية (بعد الدخول) ==================== -->
+    <div id="screen-main" class="screen">
+
+      <!-- مؤشر حالة الدرع -->
+      <div class="shield-status">
+        <div class="status-dot"></div>
+        <div>
+          <div class="status-text">الدرع نشط ومحمي</div>
+          <div class="status-sub">جميع أنظمة الحماية تعمل بكفاءة</div>
+        </div>
+      </div>
+
+      <!-- أيقونة الدرع المركزية -->
+      <div class="shield-center">
+        <svg class="shield-svg" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+          <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+          <path d="M9 12l2 2 4-4" stroke-width="1.5"/>
+        </svg>
+      </div>
+
+      <!-- أزرار الإجراءات -->
+      <button id="btn-block-current" class="btn btn-action block-btn">
+        <span class="btn-icon">🚫</span>
+        حجب الموقع الحالي فوراً
+      </button>
+
+      <button id="btn-open-dashboard" class="btn btn-action">
+        <span class="btn-icon">⚙️</span>
+        فتح لوحة التحكم
+      </button>
+
+      <div class="divider"></div>
+
+      <button id="btn-lock" class="btn btn-action lock-btn">
+        <span class="btn-icon">🔒</span>
+        تسجيل الخروج
+      </button>
+
+      <!-- إحصائيات اليوم -->
+      <div class="stats-bar">
+        <span class="stats-label">المحاولات المحجوبة اليوم:</span>
+        <span id="stats-today-count" class="stats-count">0</span>
+      </div>
+    </div>
+
+    <!-- الفاصل وجزء عن الأداة -->
+    <div class="divider"></div>
+    <div class="popup-about" style="text-align: center; font-size: 10px; color: var(--text-muted); line-height: 1.5;">
+      <span id="popup-about-dev">تطوير: أحمد إبراهيم</span> | <span style="font-family: 'Outfit';">v1.0.0</span>
+    </div>
+
+  </div>
+
+  <!-- رسالة التنبيه المنبثقة -->
+  <div id="toast" class="toast"></div>
+
+  <!-- تحميل منطق البوب أب -->
+  <script src="popup.js"></script>
+</body>
+</html>

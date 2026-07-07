@@ -1,0 +1,1459 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="utf-8">
+  <title>لوحة التحكم | درع الفطرة</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <!-- استيراد خطوط Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&family=Outfit:wght@400;600;800&display=swap" rel="stylesheet">
+
+  <style>
+    /* ═══════════════════════ متغيرات التصميم الرئيسية ═══════════════════════ */
+    :root {
+      --bg-main: #0f172a;
+      --bg-card: rgba(30, 41, 59, 0.75);
+      --accent: #0d9488;
+      --accent-hover: #14b8a6;
+      --accent-gold: #d97706;
+      --accent-gold-hover: #f59e0b;
+      --text-main: #f8fafc;
+      --text-muted: #94a3b8;
+      --border-color: rgba(255, 255, 255, 0.1);
+      --danger-color: #ef4444;
+      --danger-hover: #dc2626;
+      --success-color: #22c55e;
+    }
+
+    /* ═══════════════════════ إعادة تهيئة والأساسيات ═══════════════════════ */
+    *, *::before, *::after { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: 'Cairo', 'Outfit', sans-serif;
+      background: linear-gradient(135deg, var(--bg-main) 0%, #022c22 100%);
+      color: var(--text-main);
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+    }
+
+    /* ═══════════════════════ شريط التمرير المخصص ═══════════════════════ */
+    ::-webkit-scrollbar { width: 6px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.15); border-radius: 99px; }
+    ::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.25); }
+
+    /* ═══════════════════════ شاشات المصادقة والدخول ═══════════════════════ */
+    .auth-container {
+      width: 100%;
+      max-width: 480px;
+      margin: 80px auto;
+      padding: 36px 32px;
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: 24px;
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4), 0 0 50px rgba(13, 148, 136, 0.15);
+      backdrop-filter: blur(12px);
+      text-align: center;
+      animation: fadeIn 0.5s ease-out;
+    }
+
+    .auth-logo {
+      width: 80px;
+      height: 80px;
+      margin: 0 auto 20px;
+      fill: none;
+      stroke: var(--accent);
+      stroke-width: 2;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+      filter: drop-shadow(0 0 10px rgba(13, 148, 136, 0.5));
+      animation: shieldPulse 3s infinite ease-in-out;
+    }
+
+    @keyframes shieldPulse {
+      0%, 100% { transform: scale(1); filter: drop-shadow(0 0 10px rgba(13, 148, 136, 0.5)); }
+      50% { transform: scale(1.04); filter: drop-shadow(0 0 20px rgba(13, 148, 136, 0.8)); }
+    }
+
+    .auth-title {
+      font-size: 22px;
+      font-weight: 900;
+      margin-bottom: 10px;
+      background: linear-gradient(to left, #2dd4bf, var(--accent));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .auth-desc {
+      color: var(--text-muted);
+      font-size: 13px;
+      margin-bottom: 25px;
+      line-height: 1.7;
+    }
+
+    .form-group {
+      margin-bottom: 20px;
+      text-align: right;
+    }
+
+    .form-group label {
+      display: block;
+      font-size: 13px;
+      font-weight: bold;
+      color: var(--text-muted);
+      margin-bottom: 8px;
+    }
+
+    .form-input {
+      width: 100%;
+      padding: 12px 16px;
+      background: rgba(15, 23, 42, 0.8);
+      border: 1px solid var(--border-color);
+      border-radius: 12px;
+      color: var(--text-main);
+      font-size: 14px;
+      font-family: 'Cairo', 'Outfit', sans-serif;
+      direction: ltr;
+      text-align: center;
+      transition: all 0.3s;
+    }
+
+    .form-input:focus {
+      outline: none;
+      border-color: var(--accent);
+      box-shadow: 0 0 12px rgba(13, 148, 136, 0.3);
+    }
+
+    .form-input::placeholder {
+      color: rgba(148, 163, 184, 0.5);
+    }
+
+    /* ═══════════════════════ الأزرار العامة ═══════════════════════ */
+    .btn {
+      width: 100%;
+      padding: 12px;
+      border: none;
+      border-radius: 12px;
+      font-size: 14px;
+      font-weight: bold;
+      font-family: 'Cairo', sans-serif;
+      cursor: pointer;
+      transition: all 0.3s;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+    }
+
+    .btn:active { transform: scale(0.97); }
+
+    .btn-primary {
+      background: var(--accent);
+      color: white;
+    }
+
+    .btn-primary:hover { background: var(--accent-hover); }
+
+    .btn-secondary {
+      background: rgba(255, 255, 255, 0.08);
+      color: var(--text-main);
+      border: 1px solid var(--border-color);
+    }
+
+    .btn-secondary:hover { background: rgba(255, 255, 255, 0.13); }
+
+    .btn-danger {
+      background: rgba(239, 68, 68, 0.15);
+      color: var(--danger-color);
+      border: 1px solid rgba(239, 68, 68, 0.2);
+    }
+
+    .btn-danger:hover { background: rgba(239, 68, 68, 0.25); }
+
+    .btn-gold {
+      background: var(--accent-gold);
+      color: white;
+    }
+
+    .btn-gold:hover { background: var(--accent-gold-hover); }
+
+    .btn-success {
+      background: rgba(34, 197, 94, 0.15);
+      color: var(--success-color);
+      border: 1px solid rgba(34, 197, 94, 0.2);
+    }
+
+    .btn-success:hover { background: rgba(34, 197, 94, 0.25); }
+
+    .btn-sm {
+      width: auto;
+      padding: 6px 16px;
+      font-size: 12px;
+    }
+
+    /* ═══════════════════════ صندوق مفتاح الاسترداد ═══════════════════════ */
+    .recovery-box {
+      background: rgba(217, 119, 6, 0.1);
+      border: 1px dashed var(--accent-gold);
+      border-radius: 12px;
+      padding: 18px;
+      margin: 20px 0;
+      color: var(--accent-gold);
+      font-size: 12px;
+      line-height: 1.8;
+    }
+
+    .recovery-key {
+      font-family: 'Outfit', monospace;
+      font-size: 22px;
+      font-weight: 800;
+      letter-spacing: 3px;
+      display: block;
+      margin-top: 10px;
+      color: var(--accent-gold-hover);
+      user-select: all;
+    }
+
+    /* ═══════════════════════ رابط نسيان كلمة المرور ═══════════════════════ */
+    .forgot-link {
+      display: inline-block;
+      margin-top: 15px;
+      font-size: 12px;
+      color: var(--text-muted);
+      text-decoration: none;
+      cursor: pointer;
+      transition: color 0.3s;
+    }
+
+    .forgot-link:hover { color: var(--accent-hover); }
+
+    /* ═══════════════════════ حاوية لوحة التحكم الرئيسية ═══════════════════════ */
+    .dashboard-container {
+      display: none;
+      width: 100%;
+      max-width: 1050px;
+      margin: 30px auto;
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: 24px;
+      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
+      backdrop-filter: blur(12px);
+      overflow: hidden;
+      animation: fadeIn 0.5s ease-out;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(12px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* ═══════════════════════ ترويسة لوحة التحكم ═══════════════════════ */
+    .db-header {
+      background: rgba(15, 23, 42, 0.6);
+      padding: 22px 30px;
+      border-bottom: 1px solid var(--border-color);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .db-title-area {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+
+    .db-logo {
+      width: 45px;
+      height: 45px;
+      fill: none;
+      stroke: var(--accent);
+      stroke-width: 2;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+      filter: drop-shadow(0 0 8px rgba(13, 148, 136, 0.4));
+    }
+
+    .db-title-text h1 {
+      margin: 0;
+      font-size: 19px;
+      font-weight: 900;
+      background: linear-gradient(to left, #2dd4bf, var(--accent));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .db-title-text p {
+      margin: 3px 0 0 0;
+      font-size: 11px;
+      color: var(--text-muted);
+    }
+
+    .logout-btn {
+      width: auto;
+      padding: 8px 18px;
+      font-size: 12px;
+    }
+
+    /* ═══════════════════════ شريط التبويبات ═══════════════════════ */
+    .db-tabs {
+      background: rgba(15, 23, 42, 0.4);
+      display: flex;
+      border-bottom: 1px solid var(--border-color);
+      padding: 0 10px;
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+    }
+
+    .tab-btn {
+      background: none;
+      border: none;
+      color: var(--text-muted);
+      padding: 14px 20px;
+      font-family: 'Cairo', sans-serif;
+      font-size: 12.5px;
+      font-weight: bold;
+      cursor: pointer;
+      transition: all 0.3s;
+      position: relative;
+      white-space: nowrap;
+    }
+
+    .tab-btn:hover { color: var(--text-main); }
+
+    .tab-btn.active { color: var(--accent-hover); }
+
+    .tab-btn.active::after {
+      content: '';
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      height: 3px;
+      background: linear-gradient(90deg, var(--accent), var(--accent-hover));
+      border-radius: 3px 3px 0 0;
+    }
+
+    /* ═══════════════════════ محتوى التبويبات ═══════════════════════ */
+    .tab-content {
+      display: none;
+      padding: 28px;
+    }
+
+    .tab-content.active { display: block; }
+
+    /* ═══════════════════════ عنوان القسم ═══════════════════════ */
+    .section-title {
+      font-size: 16px;
+      font-weight: 900;
+      margin: 0 0 6px 0;
+      color: var(--text-main);
+    }
+
+    .section-desc {
+      font-size: 12px;
+      color: var(--text-muted);
+      margin: 0 0 20px 0;
+      line-height: 1.6;
+    }
+
+    /* ═══════════════════════ صف الإجراءات ═══════════════════════ */
+    .action-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
+    .action-row .btns-group {
+      display: flex;
+      gap: 8px;
+    }
+
+    /* ═══════════════════════ حاوية الجدول ═══════════════════════ */
+    .table-container {
+      background: rgba(15, 23, 42, 0.4);
+      border: 1px solid var(--border-color);
+      border-radius: 16px;
+      overflow: hidden;
+      max-height: 420px;
+      overflow-y: auto;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      text-align: right;
+      font-size: 12.5px;
+    }
+
+    th, td {
+      padding: 12px 16px;
+      border-bottom: 1px solid var(--border-color);
+    }
+
+    th {
+      background: rgba(15, 23, 42, 0.7);
+      font-weight: bold;
+      color: var(--text-muted);
+      font-size: 11.5px;
+      position: sticky;
+      top: 0;
+      z-index: 1;
+    }
+
+    tr:last-child td { border-bottom: none; }
+    tr:hover td { background: rgba(255, 255, 255, 0.02); }
+
+    .empty-state {
+      padding: 40px 20px;
+      text-align: center;
+      color: var(--text-muted);
+      font-size: 13px;
+    }
+
+    .reason-tag {
+      background: rgba(239, 68, 68, 0.12);
+      color: #f87171;
+      padding: 3px 10px;
+      border-radius: 99px;
+      font-size: 11px;
+      font-weight: bold;
+      border: 1px solid rgba(239, 68, 68, 0.2);
+      white-space: nowrap;
+    }
+
+    .keyword-tag {
+      background: rgba(217, 119, 6, 0.12);
+      color: var(--accent-gold-hover);
+      padding: 2px 8px;
+      border-radius: 99px;
+      font-size: 10.5px;
+      font-weight: bold;
+      border: 1px solid rgba(217, 119, 6, 0.2);
+      font-family: 'Outfit', monospace;
+      direction: ltr;
+    }
+
+    .action-tag {
+      background: rgba(13, 148, 136, 0.12);
+      color: var(--accent-hover);
+      padding: 2px 8px;
+      border-radius: 99px;
+      font-size: 10.5px;
+      font-weight: bold;
+      border: 1px solid rgba(13, 148, 136, 0.2);
+    }
+
+    /* ═══════════════════════ طلبات الاستثناء ═══════════════════════ */
+    .requests-section {
+      margin-top: 30px;
+    }
+
+    .request-card {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 12px 16px;
+      background: rgba(15, 23, 42, 0.4);
+      border: 1px solid var(--border-color);
+      border-radius: 12px;
+      margin-bottom: 8px;
+      gap: 12px;
+    }
+
+    .request-card .request-info {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .request-card .request-url {
+      font-family: 'Outfit', monospace;
+      font-size: 13px;
+      word-break: break-all;
+      color: var(--text-main);
+    }
+
+    .request-card .request-time {
+      font-size: 10.5px;
+      color: var(--text-muted);
+      margin-top: 4px;
+    }
+
+    .request-card .request-actions {
+      display: flex;
+      gap: 6px;
+      flex-shrink: 0;
+    }
+
+    /* ═══════════════════════ بطاقات الفئات المخصصة ═══════════════════════ */
+    .category-card {
+      background: rgba(15, 23, 42, 0.4);
+      border: 1px solid var(--border-color);
+      border-radius: 16px;
+      margin-bottom: 16px;
+      overflow: hidden;
+      transition: all 0.3s;
+    }
+
+    .category-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 14px 18px;
+      cursor: pointer;
+      transition: background 0.3s;
+      gap: 10px;
+    }
+
+    .category-header:hover { background: rgba(255, 255, 255, 0.03); }
+
+    .category-header-right {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex: 1;
+      min-width: 0;
+    }
+
+    .category-name {
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--text-main);
+    }
+
+    .category-count {
+      font-size: 11px;
+      color: var(--text-muted);
+      background: rgba(255, 255, 255, 0.08);
+      padding: 2px 10px;
+      border-radius: 99px;
+    }
+
+    .category-header-left {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-shrink: 0;
+    }
+
+    .category-body {
+      display: none;
+      padding: 0 18px 16px;
+      border-top: 1px solid var(--border-color);
+    }
+
+    .category-body.open { display: block; }
+
+    .category-body .input-group {
+      display: flex;
+      gap: 8px;
+      margin: 14px 0 12px;
+    }
+
+    .category-body .input-group .form-input {
+      flex: 1;
+      text-align: left;
+      direction: ltr;
+      padding: 10px 14px;
+      font-size: 13px;
+    }
+
+    .category-body .input-group .btn {
+      width: auto;
+      white-space: nowrap;
+      padding: 0 20px;
+    }
+
+    .sites-list {
+      max-height: 220px;
+      overflow-y: auto;
+      border: 1px solid var(--border-color);
+      border-radius: 12px;
+      background: rgba(15, 23, 42, 0.5);
+    }
+
+    .site-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 10px 14px;
+      border-bottom: 1px solid var(--border-color);
+      font-family: 'Outfit', sans-serif;
+      font-size: 13px;
+      direction: ltr;
+      text-align: left;
+    }
+
+    .site-item:last-child { border-bottom: none; }
+
+    /* ═══════════════════════ مفتاح التبديل (Toggle Switch) ═══════════════════════ */
+    .toggle-switch {
+      position: relative;
+      width: 42px;
+      height: 22px;
+      flex-shrink: 0;
+    }
+
+    .toggle-switch input {
+      opacity: 0;
+      width: 0;
+      height: 0;
+    }
+
+    .toggle-slider {
+      position: absolute;
+      cursor: pointer;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(255, 255, 255, 0.15);
+      border-radius: 22px;
+      transition: all 0.3s;
+    }
+
+    .toggle-slider::before {
+      content: '';
+      position: absolute;
+      height: 16px;
+      width: 16px;
+      left: 3px;
+      bottom: 3px;
+      background: white;
+      border-radius: 50%;
+      transition: all 0.3s;
+    }
+
+    .toggle-switch input:checked + .toggle-slider {
+      background: var(--accent);
+    }
+
+    .toggle-switch input:checked + .toggle-slider::before {
+      transform: translateX(20px);
+    }
+
+    /* ═══════════════════════ زر الحذف الصغير ═══════════════════════ */
+    .delete-btn {
+      background: none;
+      border: none;
+      color: var(--danger-color);
+      cursor: pointer;
+      font-size: 11px;
+      font-weight: bold;
+      font-family: 'Cairo', sans-serif;
+      padding: 4px 8px;
+      border-radius: 6px;
+      transition: all 0.2s;
+    }
+
+    .delete-btn:hover {
+      background: rgba(239, 68, 68, 0.1);
+      text-decoration: none;
+    }
+
+    /* ═══════════════════════ بطاقة عامة ═══════════════════════ */
+    .card {
+      background: rgba(15, 23, 42, 0.4);
+      border: 1px solid var(--border-color);
+      border-radius: 16px;
+      padding: 22px;
+      margin-bottom: 20px;
+    }
+
+    .card-title {
+      font-size: 15px;
+      font-weight: bold;
+      margin: 0 0 6px 0;
+      color: var(--text-main);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .card-desc {
+      font-size: 12px;
+      color: var(--text-muted);
+      margin: 0 0 16px 0;
+      line-height: 1.6;
+    }
+
+    /* ═══════════════════════ تبويب الاستثناءات ═══════════════════════ */
+    .exceptions-list {
+      max-height: 320px;
+      overflow-y: auto;
+      border: 1px solid var(--border-color);
+      border-radius: 12px;
+      background: rgba(15, 23, 42, 0.5);
+    }
+
+    .exception-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 11px 15px;
+      border-bottom: 1px solid var(--border-color);
+      font-family: 'Outfit', sans-serif;
+      font-size: 13px;
+      direction: ltr;
+      text-align: left;
+    }
+
+    .exception-item:last-child { border-bottom: none; }
+
+    /* ═══════════════════════ تبويب الإعدادات ═══════════════════════ */
+    .settings-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+    }
+
+    @media (max-width: 700px) {
+      .settings-grid { grid-template-columns: 1fr; }
+    }
+
+    .setting-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 14px 0;
+      border-bottom: 1px solid var(--border-color);
+    }
+
+    .setting-row:last-child { border-bottom: none; }
+
+    .setting-info {
+      flex: 1;
+    }
+
+    .setting-label {
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--text-main);
+    }
+
+    .setting-desc {
+      font-size: 11px;
+      color: var(--text-muted);
+      margin-top: 2px;
+    }
+
+    .masked-key {
+      font-family: 'Outfit', monospace;
+      font-size: 13px;
+      color: var(--text-muted);
+      letter-spacing: 1px;
+      user-select: none;
+    }
+
+    .file-label {
+      display: block;
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px dashed var(--border-color);
+      border-radius: 12px;
+      padding: 18px;
+      text-align: center;
+      cursor: pointer;
+      font-size: 13px;
+      transition: all 0.3s;
+    }
+
+    .file-label:hover {
+      background: rgba(255, 255, 255, 0.07);
+      border-color: var(--accent);
+    }
+
+    .file-label p {
+      margin: 6px 0 0 0;
+      font-size: 11px;
+      color: var(--text-muted);
+    }
+
+    /* ═══════════════════════ تبويب DNS ═══════════════════════ */
+    .dns-card {
+      background: rgba(13, 148, 136, 0.05);
+      border: 1px solid rgba(13, 148, 136, 0.2);
+      border-radius: 16px;
+      padding: 22px;
+      margin-bottom: 22px;
+    }
+
+    .dns-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 16px;
+      margin-top: 16px;
+    }
+
+    @media (max-width: 700px) {
+      .dns-grid { grid-template-columns: 1fr; }
+    }
+
+    .dns-server-box {
+      background: rgba(15, 23, 42, 0.6);
+      border: 1px solid var(--border-color);
+      border-radius: 12px;
+      padding: 16px;
+      text-align: center;
+    }
+
+    .dns-name {
+      font-weight: bold;
+      color: var(--accent-hover);
+      font-size: 13px;
+      margin-bottom: 10px;
+    }
+
+    .dns-ip {
+      font-family: 'Outfit', monospace;
+      font-size: 16px;
+      color: var(--text-main);
+      letter-spacing: 1px;
+    }
+
+    .dns-ip-label {
+      font-size: 10px;
+      color: var(--text-muted);
+      margin-top: 8px;
+    }
+
+    .alert-banner {
+      background: rgba(217, 119, 6, 0.1);
+      border: 1px solid rgba(217, 119, 6, 0.2);
+      border-radius: 12px;
+      padding: 16px;
+      color: var(--accent-gold-hover);
+      font-size: 12px;
+      margin-top: 22px;
+      line-height: 1.7;
+    }
+
+    .steps-list {
+      padding-right: 20px;
+      line-height: 1.8;
+      font-size: 13px;
+      color: var(--text-muted);
+    }
+
+    .steps-list li { margin-bottom: 6px; }
+    .steps-list li strong { color: var(--text-main); }
+    .steps-list code {
+      font-family: 'Outfit', monospace;
+      background: rgba(255, 255, 255, 0.08);
+      padding: 2px 8px;
+      border-radius: 4px;
+      font-size: 12px;
+      color: var(--accent-hover);
+    }
+
+    /* ═══════════════════════ رسالة التنبيه (Toast) ═══════════════════════ */
+    .toast-msg {
+      position: fixed;
+      bottom: 24px;
+      left: 50%;
+      transform: translateX(-50%) translateY(20px);
+      background: rgba(13, 148, 136, 0.95);
+      color: white;
+      padding: 11px 28px;
+      border-radius: 99px;
+      font-size: 13px;
+      font-family: 'Cairo', sans-serif;
+      font-weight: 600;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+      z-index: 200;
+      opacity: 0;
+      transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+      pointer-events: none;
+    }
+
+    .toast-msg.visible {
+      opacity: 1;
+      transform: translateX(-50%) translateY(0);
+    }
+
+    /* ═══════════════════════ المودال (Modal) ═══════════════════════ */
+    .modal-overlay {
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(0, 0, 0, 0.6);
+      backdrop-filter: blur(4px);
+      z-index: 300;
+      display: none;
+      justify-content: center;
+      align-items: center;
+      animation: fadeIn 0.2s ease-out;
+    }
+
+    .modal-overlay.visible {
+      display: flex;
+    }
+
+    .modal-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: 20px;
+      padding: 28px;
+      width: 90%;
+      max-width: 440px;
+      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
+      backdrop-filter: blur(16px);
+      animation: fadeIn 0.3s ease-out;
+    }
+
+    .modal-title {
+      font-size: 17px;
+      font-weight: 900;
+      color: var(--text-main);
+      margin-bottom: 10px;
+      text-align: center;
+    }
+
+    .modal-body {
+      font-size: 13px;
+      color: var(--text-muted);
+      margin-bottom: 18px;
+      text-align: center;
+      line-height: 1.7;
+    }
+
+    #modal-input-area {
+      margin-bottom: 18px;
+    }
+
+    #modal-input-area .form-input {
+      width: 100%;
+    }
+
+    #modal-input-area:empty {
+      margin-bottom: 0;
+    }
+
+    .modal-actions {
+      display: flex;
+      gap: 10px;
+    }
+
+    .modal-actions .btn {
+      flex: 1;
+    }
+
+    /* ═══════════════════════ زر الدعم ═══════════════════════ */
+    .support-btn {
+      display: block;
+      width: 100%;
+      padding: 14px;
+      background: linear-gradient(135deg, rgba(34, 197, 94, 0.15), rgba(13, 148, 136, 0.15));
+      border: 1px solid rgba(34, 197, 94, 0.25);
+      border-radius: 12px;
+      color: var(--success-color);
+      font-size: 15px;
+      font-weight: 700;
+      font-family: 'Cairo', sans-serif;
+      cursor: pointer;
+      transition: all 0.3s;
+      text-align: center;
+      text-decoration: none;
+      margin-top: 16px;
+    }
+
+    .support-btn:hover {
+      background: linear-gradient(135deg, rgba(34, 197, 94, 0.25), rgba(13, 148, 136, 0.25));
+      transform: translateY(-1px);
+    }
+
+    /* ═══════════════════════ شاشة إعادة ضبط كلمة المرور ═══════════════════════ */
+    .new-pass-fields {
+      margin-top: 18px;
+    }
+    /* ═══════════════════════ دعم اللغات والاتجاهات ═══════════════════════ */
+    body.ltr {
+      direction: ltr !important;
+      font-family: 'Outfit', sans-serif !important;
+    }
+    body.ltr .auth-desc, body.ltr .card-desc, body.ltr .section-desc, body.ltr .steps-list, body.ltr .empty-state {
+      text-align: left;
+    }
+    body.ltr .form-group label {
+      text-align: left;
+      display: block;
+    }
+    body.ltr .steps-list {
+      padding-left: 20px;
+      padding-right: 0;
+    }
+    body.ltr .alert-banner {
+      text-align: left;
+    }
+    body.ltr .dns-server-box {
+      text-align: center;
+    }
+    body.ltr .tab-btn {
+      font-family: 'Outfit', sans-serif;
+    }
+    body.ltr .btn {
+      font-family: 'Outfit', sans-serif;
+    }
+    body.ltr .logout-container {
+      flex-direction: row-reverse;
+    }
+    body.ltr .db-title-text {
+      text-align: left;
+    }
+    body.ltr .db-header {
+      flex-direction: row;
+    }
+    body.ltr .db-title-area {
+      flex-direction: row;
+    }
+    body.ltr .action-row {
+      flex-direction: row;
+    }
+    body.ltr .custom-item {
+      flex-direction: row;
+    }
+    body.ltr .exception-item {
+      flex-direction: row;
+    }
+    body.ltr .setting-row {
+      flex-direction: row;
+    }
+    body.ltr .card-title {
+      flex-direction: row;
+    }
+    body.ltr .modal-actions {
+      flex-direction: row;
+    }
+    #help-states-list {
+      padding-right: 0;
+      padding-left: 0;
+    }
+    body.ltr #help-states-list {
+      padding-left: 0;
+      padding-right: 0;
+    }
+  </style>
+</head>
+<body>
+  <!-- زر تبديل اللغة العائم لشاشات الدخول -->
+  <div id="auth-lang-container" style="position: fixed; top: 20px; left: 20px; z-index: 1000;">
+    <button class="btn btn-secondary btn-sm lang-toggle-btn" style="width: auto; padding: 6px 14px;">English</button>
+  </div>
+
+  <!-- ==================== 1. شاشة تعيين كلمة المرور لأول مرة ==================== -->
+  <div id="setup-screen" class="auth-container" style="display: none;">
+    <svg class="auth-logo" viewBox="0 0 24 24">
+      <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+    </svg>
+    <div class="auth-title">إعداد درع الفطرة لأول مرة</div>
+    <div class="auth-desc">قم بتعيين كلمة مرور رئيسية قوية لحماية إعدادات الإضافة وسجلات الحظر من عبث الأولاد. هذه الكلمة لن يتمكن أحد من رؤيتها.</div>
+
+    <div class="form-group">
+      <label for="setup-password">كلمة المرور الرئيسية الجديدة:</label>
+      <input type="password" id="setup-password" class="form-input" placeholder="••••••••" required>
+    </div>
+    <div class="form-group">
+      <label for="setup-password-confirm">تأكيد كلمة المرور:</label>
+      <input type="password" id="setup-password-confirm" class="form-input" placeholder="••••••••" required>
+    </div>
+
+    <button id="btn-setup-save" class="btn btn-primary">حفظ وتوليد مفتاح الاسترداد 🔐</button>
+  </div>
+
+  <!-- ==================== 2. شاشة عرض مفتاح الاسترداد ==================== -->
+  <div id="recovery-screen" class="auth-container" style="display: none;">
+    <svg class="auth-logo" viewBox="0 0 24 24" style="stroke: var(--accent-gold);">
+      <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+    </svg>
+    <div class="auth-title" style="background: linear-gradient(to left, var(--accent-gold-hover), var(--accent-gold)); -webkit-background-clip: text;">⚠️ احفظ مفتاح الاسترداد!</div>
+    <div class="auth-desc">إذا نسيت كلمة المرور، فلن تستطيع الدخول إلا عبر هذا المفتاح. اكتبه في ورقة واحتفظ بها في مكان آمن بعيداً عن متناول الأطفال.</div>
+
+    <div class="recovery-box">
+      <span>مفتاح الاسترداد الرئيسي (Master Recovery Key):</span>
+      <span id="display-recovery-key" class="recovery-key">FS-XXXX-XXXX-XXXX-XXXX</span>
+    </div>
+
+    <button id="btn-recovery-confirm" class="btn btn-gold">لقد قمت بحفظ المفتاح، انقلني للوحة التحكم ✅</button>
+  </div>
+
+  <!-- ==================== 3. شاشة تسجيل الدخول ==================== -->
+  <div id="login-screen" class="auth-container" style="display: none;">
+    <svg class="auth-logo" viewBox="0 0 24 24">
+      <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+    </svg>
+    <div class="auth-title">بوابة حماية درع الفطرة</div>
+    <div class="auth-desc">الرجاء إدخال كلمة المرور الرئيسية للوصول إلى لوحة الإشراف الأبوي وسجلات النشاط.</div>
+
+    <div class="form-group">
+      <label for="login-password">كلمة المرور:</label>
+      <input type="password" id="login-password" class="form-input" placeholder="••••••••" required>
+    </div>
+
+    <button id="btn-login" class="btn btn-primary">تسجيل الدخول 🔓</button>
+    <a id="link-forgot-pass" class="forgot-link">نسيت كلمة المرور؟</a>
+  </div>
+
+  <!-- ==================== 4. شاشة استرداد كلمة المرور ==================== -->
+  <div id="forgot-screen" class="auth-container" style="display: none;">
+    <svg class="auth-logo" viewBox="0 0 24 24" style="stroke: var(--accent-gold);">
+      <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+    </svg>
+    <div class="auth-title" style="background: linear-gradient(to left, var(--accent-gold-hover), var(--accent-gold)); -webkit-background-clip: text;">استرداد كلمة المرور</div>
+    <div class="auth-desc">أدخل مفتاح الاسترداد الذي تم توليده عند الإعداد لأول مرة لإعادة تعيين كلمة المرور.</div>
+
+    <div class="form-group">
+      <label for="recovery-key-input">مفتاح الاسترداد:</label>
+      <input type="text" id="recovery-key-input" class="form-input" placeholder="FS-XXXX-XXXX-XXXX-XXXX" style="direction: ltr;" required>
+    </div>
+
+    <!-- حقول كلمة المرور الجديدة (تظهر بعد التحقق) -->
+    <div id="new-pass-fields" class="new-pass-fields" style="display: none;">
+      <div class="form-group">
+        <label for="new-password">كلمة المرور الجديدة:</label>
+        <input type="password" id="new-password" class="form-input" placeholder="••••••••" required>
+      </div>
+      <div class="form-group">
+        <label for="new-password-confirm">تأكيد كلمة المرور الجديدة:</label>
+        <input type="password" id="new-password-confirm" class="form-input" placeholder="••••••••" required>
+      </div>
+    </div>
+
+    <button id="btn-submit-recovery" class="btn btn-gold">التحقق من المفتاح 🔑</button>
+    <a id="link-back-login" class="forgot-link">العودة إلى شاشة الدخول</a>
+  </div>
+
+  <!-- ==================== 5. لوحة التحكم الرئيسية ==================== -->
+  <div id="dashboard-screen" class="dashboard-container">
+    <!-- الترويسة -->
+    <div class="db-header">
+      <div class="db-title-area">
+        <svg class="db-logo" viewBox="0 0 24 24">
+          <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+        </svg>
+        <div class="db-title-text">
+          <h1>لوحة تحكم الآباء | درع الفطرة</h1>
+          <p>نظام إشراف أبوي محلي وآمن 100% — لا ترسل بياناتك لأي خادم</p>
+        </div>
+      </div>
+      <div class="logout-container" style="display: flex; gap: 8px; align-items: center;">
+        <button class="btn btn-secondary btn-sm lang-toggle-btn" style="width: auto; padding: 8px 16px;">English</button>
+        <button id="btn-lock" class="btn btn-secondary logout-btn">تسجيل الخروج 🔒</button>
+      </div>
+    </div>
+
+    <!-- شريط التبويبات -->
+    <div class="db-tabs">
+      <button class="tab-btn active" data-tab="logs">📊 سجل المحاولات</button>
+      <button class="tab-btn" data-tab="categories">🔒 القوائم المخصصة</button>
+      <button class="tab-btn" data-tab="exceptions">✅ قائمة الاستثناءات</button>
+      <button class="tab-btn" data-tab="settings">⚙ إعدادات الحماية</button>
+      <button class="tab-btn" data-tab="dns">🌐 حصّن بيتك</button>
+      <button class="tab-btn" data-tab="about">ℹ️ عن الأداة</button>
+      <button class="tab-btn" data-tab="help">❓ دليل الاستخدام</button>
+    </div>
+
+    <!-- ═══════════ التبويب 1: سجل المحاولات ═══════════ -->
+    <div id="content-logs" class="tab-content active">
+      <div class="action-row">
+        <div>
+          <h3 class="section-title">آخر الزيارات المحجوبة</h3>
+          <p class="section-desc" style="margin-bottom:0">محاولات الأطفال التي تم رصدها وحجبها تلقائياً</p>
+        </div>
+        <div class="btns-group">
+          <button id="btn-refresh-logs" class="btn btn-secondary btn-sm">تحديث 🔄</button>
+          <button id="btn-clear-logs" class="btn btn-danger btn-sm">مسح السجل 🗑️</button>
+        </div>
+      </div>
+
+      <div class="table-container">
+        <table id="logs-table">
+          <thead>
+            <tr>
+              <th style="width:20%">التاريخ</th>
+              <th style="width:30%">الموقع</th>
+              <th style="width:18%">سبب الحجب</th>
+              <th style="width:17%">الكلمة المرصودة</th>
+              <th style="width:15%">التصرف</th>
+            </tr>
+          </thead>
+          <tbody id="logs-tbody"></tbody>
+        </table>
+        <div id="logs-empty" class="empty-state" style="display:none;">
+          🛡️ لا توجد محاولات حظر مسجلة حتى الآن. عائلتك في أمان!
+        </div>
+      </div>
+
+      <!-- قسم طلبات الاستثناء -->
+      <div class="requests-section">
+        <h3 class="section-title" style="margin-top:10px;">طلبات الاستثناء الواردة</h3>
+        <p class="section-desc">مواقع طلب الأطفال إضافتها للقائمة البيضاء من صفحة الحجب</p>
+        <div id="exception-requests-container"></div>
+        <div id="requests-empty" class="empty-state" style="display:none; padding:20px;">
+          لا توجد طلبات استثناء حالياً.
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══════════ التبويب 2: القوائم المخصصة ═══════════ -->
+    <div id="content-categories" class="tab-content">
+      <div class="action-row">
+        <div>
+          <h3 class="section-title">القوائم المخصصة للحظر</h3>
+          <p class="section-desc" style="margin-bottom:0">أنشئ فئات مخصصة (مثل: ألعاب، تشتيت، وسائل تواصل) وأضف المواقع تحت كل فئة</p>
+        </div>
+        <button id="btn-add-category" class="btn btn-primary btn-sm">+ إضافة فئة</button>
+      </div>
+
+      <div id="categories-container"></div>
+
+      <div id="categories-empty" class="empty-state" style="display:none;">
+        📂 لم تقم بإنشاء أي فئة بعد. أضف فئة جديدة لتبدأ بتنظيم المواقع المحظورة.
+      </div>
+    </div>
+
+    <!-- ═══════════ التبويب 3: قائمة الاستثناءات ═══════════ -->
+    <div id="content-exceptions" class="tab-content">
+      <div class="card">
+        <h3 class="card-title">القائمة البيضاء (المواقع المستثناة)</h3>
+        <p class="card-desc">هذه المواقع لن يتم حجبها أبداً حتى لو تطابقت مع كلمات مفتاحية محظورة. مفيدة للمواقع التعليمية أو الطبية التي تحتوي كلمات قد تُحجب خطأً.</p>
+
+        <div style="display:flex; gap:8px; margin-bottom:14px;">
+          <input type="text" id="exception-input" class="form-input" placeholder="example.com" style="flex:1; text-align:left; direction:ltr;">
+          <button id="btn-add-exception" class="btn btn-primary" style="width:auto; padding:0 24px;">إضافة</button>
+        </div>
+
+        <div class="exceptions-list" id="exceptions-list-container"></div>
+        <div id="exceptions-empty" class="empty-state" style="display:none; padding:20px;">
+          لم تقم بإضافة أي استثناءات بعد.
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══════════ التبويب 4: إعدادات الحماية ═══════════ -->
+    <div id="content-settings" class="tab-content">
+      <div class="settings-grid">
+        <!-- تغيير كلمة المرور -->
+        <div class="card">
+          <h3 class="card-title">تغيير كلمة المرور</h3>
+          <p class="card-desc">يتطلب إدخال كلمة المرور الحالية أولاً للتحقق.</p>
+          <div class="form-group">
+            <label for="current-pass-input">كلمة المرور الحالية:</label>
+            <input type="password" id="current-pass-input" class="form-input" placeholder="••••••••">
+          </div>
+          <div class="form-group">
+            <label for="new-pass-input">كلمة المرور الجديدة:</label>
+            <input type="password" id="new-pass-input" class="form-input" placeholder="••••••••">
+          </div>
+          <div class="form-group">
+            <label for="new-pass-confirm-input">تأكيد الجديدة:</label>
+            <input type="password" id="new-pass-confirm-input" class="form-input" placeholder="••••••••">
+          </div>
+          <button id="btn-change-password" class="btn btn-primary">تحديث كلمة المرور 🔄</button>
+        </div>
+
+        <!-- إعدادات الحماية -->
+        <div class="card">
+          <h3 class="card-title">خيارات الحماية</h3>
+          <p class="card-desc">تحكم في آليات الحماية الفعّالة على المتصفح.</p>
+
+          <div class="setting-row">
+            <div class="setting-info">
+              <div class="setting-label">فرض البحث الآمن (SafeSearch)</div>
+              <div class="setting-desc">يمنع ظهور نتائج بحث غير لائقة على Google وBing</div>
+            </div>
+            <label class="toggle-switch">
+              <input type="checkbox" id="toggle-safesearch" checked>
+              <span class="toggle-slider"></span>
+            </label>
+          </div>
+
+          <div class="setting-row">
+            <div class="setting-info">
+              <div class="setting-label">بصمة مفتاح الاسترداد</div>
+              <div class="setting-desc">هاش التعريف المشفر لمفتاح الاسترداد</div>
+            </div>
+            <span id="recovery-hash-display" class="masked-key">••••••••••••</span>
+          </div>
+        </div>
+
+        <!-- تصدير واستيراد -->
+        <div class="card">
+          <h3 class="card-title">تصدير الإعدادات</h3>
+          <p class="card-desc">تصدير جميع إعداداتك (بدون كلمة المرور ومفتاح الاسترداد) لنقلها أو حفظها.</p>
+          <button id="btn-export-settings" class="btn btn-secondary">تصدير إعدادات درع الفطرة (.json) 📤</button>
+        </div>
+
+        <div class="card">
+          <h3 class="card-title">استيراد قائمة مواقع</h3>
+          <p class="card-desc">ارفع ملف نصي (.txt) يحتوي على روابط مواقع (رابط في كل سطر) لإضافتها لفئة مخصصة.</p>
+          <label for="import-file" class="file-label">
+            <strong>📥 اختر ملف .txt للاستيراد</strong>
+            <p>سيتم تطهير الروابط وإضافتها تلقائياً لفئة "مستورد" مخصصة.</p>
+          </label>
+          <input type="file" id="import-file" accept=".txt" style="display:none;">
+        </div>
+      </div>
+
+      <!-- زر الدعم -->
+      <a href="https://github.com/AhmadAlHusworking/FitraShield" target="_blank" class="support-btn">
+        ادعمنا لحماية جيل 💚 — ساهم على GitHub
+      </a>
+    </div>
+
+    <!-- ═══════════ التبويب 5: حصّن بيتك (DNS) ═══════════ -->
+    <div id="content-dns" class="tab-content">
+      <h3 class="section-title" style="color: var(--accent-hover);">🏠 حماية شبكة الواي فاي والراوتر المنزلي</h3>
+      <p class="section-desc">لتأمين بيتك بالكامل وحماية الهواتف المحمولة والتابلت والشاشات الذكية دون الحاجة لتنزيل الإضافة على كل جهاز، ننصح بشدة بتغيير الـ DNS الخاص بالراوتر المنزلي إلى أحد خيارات الـ DNS العائلي النظيف.</p>
+
+      <div class="dns-card">
+        <h4 style="margin:0 0 10px 0; color:var(--text-main); font-size:15px;">أقوى خيارات الـ DNS العائلي المجاني:</h4>
+
+        <div class="dns-grid">
+          <!-- Cloudflare Family -->
+          <div class="dns-server-box">
+            <div class="dns-name">Cloudflare Family</div>
+            <div class="dns-ip">1.1.1.3</div>
+            <div class="dns-ip-label">Primary</div>
+            <div class="dns-ip" style="margin-top:6px;">1.0.0.3</div>
+            <div class="dns-ip-label">Secondary</div>
+          </div>
+          <!-- AdGuard DNS Family -->
+          <div class="dns-server-box">
+            <div class="dns-name">AdGuard DNS Family</div>
+            <div class="dns-ip">94.140.14.15</div>
+            <div class="dns-ip-label">Primary</div>
+            <div class="dns-ip" style="margin-top:6px;">94.140.15.16</div>
+            <div class="dns-ip-label">Secondary</div>
+          </div>
+          <!-- CleanBrowsing Family -->
+          <div class="dns-server-box">
+            <div class="dns-name">CleanBrowsing Family</div>
+            <div class="dns-ip">185.228.168.168</div>
+            <div class="dns-ip-label">Primary</div>
+            <div class="dns-ip" style="margin-top:6px;">185.228.169.168</div>
+            <div class="dns-ip-label">Secondary</div>
+          </div>
+        </div>
+      </div>
+
+      <h4 style="color:var(--text-main); margin-bottom:10px;">📋 خطوات ضبط DNS على الراوتر:</h4>
+      <ol class="steps-list">
+        <li>افتح المتصفح واكتب عنوان صفحة إعدادات الراوتر (غالباً <code>192.168.1.1</code> أو <code>192.168.0.1</code>).</li>
+        <li>سجّل الدخول باستخدام بيانات المسؤول المكتوبة خلف الراوتر (<strong>Admin / Password</strong>).</li>
+        <li>ابحث عن إعدادات <strong>WAN</strong> أو <strong>LAN</strong> أو <strong>DHCP Server</strong>.</li>
+        <li>ابحث عن خانات <strong>Primary DNS</strong> و <strong>Secondary DNS</strong>.</li>
+        <li>أدخل العناوين النظيفة (مثلاً <code>1.1.1.3</code> و <code>1.0.0.3</code>).</li>
+        <li>احفظ الإعدادات وأعد تشغيل الراوتر لتعميم الحماية على <strong>كل أجهزة البيت</strong>.</li>
+      </ol>
+
+      <div class="alert-banner">
+        ⚠️ <strong>ملاحظة تقنية:</strong> لا يتعارض DNS الراوتر النظيف مع عمل إضافة درع الفطرة على المتصفح؛ بل يعملان معاً كخطوط دفاعية متكاملة. الأول يحجب على مستوى إشارة الواي فاي لكل الأجهزة، والإضافة تحمي محلياً من التفاف الأطفال أو استخدام أدوات تخطي على المتصفح.
+      </div>
+    </div>
+
+    <!-- ═══════════ التبويب 7: دليل الاستخدام (Help & Guide) ═══════════ -->
+    <div id="content-help" class="tab-content">
+      <div class="settings-grid">
+        <!-- دليل البدء السريع والتحصين -->
+        <div class="card">
+          <h3 id="help-setup-title" class="card-title">🚀 دليل البدء السريع والتحصين</h3>
+          <p id="help-setup-desc" class="card-desc">خطوات تأمين وحماية الجهاز لمنع الأطفال من الالتفاف على الأداة أو إزالتها:</p>
+          <ol class="steps-list" id="help-setup-list">
+            <li>قم بتحميل وتشغيل ملف <code>install.bat</code> كمسؤول (Run as Admin).</li>
+            <li>أدخل معرّف الإضافة (Extension ID) الخاص بهذه الأداة واضغط Enter.</li>
+            <li>سيقوم المساعد تلقائياً بقفل وضع التصفح الخفي (Incognito) ومنع تعطيل أو حذف الأداة.</li>
+            <li>تأكد من تشغيل ملف <code>helper.bat</code> في الخلفية لحفظ تقارير الزيارات المحجوبة.</li>
+          </ol>
+        </div>
+
+        <!-- فهم حالات الأيقونة -->
+        <div class="card">
+          <h3 id="help-states-title" class="card-title">🟢 فهم حالات أيقونة الأداة</h3>
+          <p id="help-states-desc" class="card-desc">تتغير ألوان أيقونة درع الفطرة في شريط الأدوات بناءً على حالة الأمان الحالية:</p>
+          <ul class="steps-list" id="help-states-list" style="list-style-type: none;">
+            <li style="margin-bottom: 12px; display: flex; align-items: center; gap: 10px;">
+              <span style="width: 14px; height: 14px; border-radius: 50%; background: #22c55e; box-shadow: 0 0 8px rgba(34, 197, 94, 0.6); display: inline-block; flex-shrink: 0;"></span>
+              <div><strong id="help-state-active-label">أخضر (نشط ومحمي):</strong> <span id="help-state-active-desc">الأداة تعمل بنجاح وجميع أنظمة الحجب وتطهير المحتوى فعالة.</span></div>
+            </li>
+            <li style="margin-bottom: 12px; display: flex; align-items: center; gap: 10px;">
+              <span style="width: 14px; height: 14px; border-radius: 50%; background: #ef4444; box-shadow: 0 0 8px rgba(239, 68, 68, 0.6); display: inline-block; flex-shrink: 0;"></span>
+              <div><strong id="help-state-blocked-label">أحمر (رصد وصد):</strong> <span id="help-state-blocked-desc">وميض أحمر مؤقت عند محاولة الدخول لموقع إباحي، إشارة لحجب الموقع وحفظ التقرير.</span></div>
+            </li>
+            <li style="margin-bottom: 12px; display: flex; align-items: center; gap: 10px;">
+              <span style="width: 14px; height: 14px; border-radius: 50%; background: #718096; box-shadow: 0 0 8px rgba(113, 128, 150, 0.6); display: inline-block; flex-shrink: 0;"></span>
+              <div><strong id="help-state-paused-label">رمادي (موقوف مؤقتاً):</strong> <span id="help-state-paused-desc">تم إيقاف تفعيل الحجب يدوياً بعد إدخال كلمة مرور الوالدين.</span></div>
+            </li>
+          </ul>
+        </div>
+
+        <!-- حلول المشاكل الشائعة -->
+        <div class="card">
+          <h3 id="help-problems-title" class="card-title">🛠️ حلول المشاكل الشائعة</h3>
+          <p id="help-problems-desc" class="card-desc">حلول سريعة لأكثر الصعوبات التي قد تواجهك أثناء الاستخدام:</p>
+          <ul class="steps-list" id="help-problems-list">
+            <li><strong id="help-prob-1-label">المشكلة: السجلات والتقارير لا تظهر في لوحة التحكم.</strong><br><span id="help-prob-1-desc">الحل: تأكد من تشغيل ملف <code>helper.bat</code> وأن برنامج بايثون مثبت على جهازك لتفعيل خدمات Native Messaging.</span></li>
+            <li style="margin-top: 12px;"><strong id="help-prob-2-label">المشكلة: استطاع طفلي إيقاف الإضافة من صفحة الإعدادات.</strong><br><span id="help-prob-2-desc">الحل: تأكد من تشغيل ملف <code>install.bat</code> بصلاحيات المسؤول لتفعيل سياسة التثبيت القسري على مستوى الويندوز.</span></li>
+          </ul>
+        </div>
+
+        <!-- الأسئلة الشائعة -->
+        <div class="card">
+          <h3 id="help-faq-title" class="card-title">❓ الأسئلة الشائعة (FAQ)</h3>
+          <p id="help-faq-desc" class="card-desc">إجابات سريعة ومختصرة حول أمان وخصوصية درع الفطرة:</p>
+          <ul class="steps-list" id="help-faq-list">
+            <li><strong id="help-faq-1-label">هل تقوم الإضافة بإبطاء سرعة التصفح؟</strong><br><span id="help-faq-1-desc">لا، تعمل الإضافة محلياً 100%، وتتم عمليات فحص الروابط والكلمات المفتاحية في أجزاء من الملي ثانية.</span></li>
+            <li style="margin-top: 12px;"><strong id="help-faq-2-label">ماذا يحدث في حال نسيان كلمة مرور الوالدين؟</strong><br><span id="help-faq-2-desc">يمكنك استخدام مفتاح الاسترداد الرئيسي الذي ظهر لك عند التثبيت لأول مرة، أو فتح ملف <code>helper.py</code> بصلاحيات المسؤول لإعادة تعيينها.</span></li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══════════ التبويب 6: عن الأداة (About) ═══════════ -->
+    <div id="content-about" class="tab-content">
+      <div class="card" style="text-align: center; padding: 40px 20px;">
+        <!-- Logo -->
+        <img src="icons/shield-active-128.png" alt="FitraShield Logo" style="width: 100px; height: 100px; margin-bottom: 20px; filter: drop-shadow(0 0 10px rgba(13, 148, 136, 0.45));">
+        
+        <!-- Tool Name -->
+        <h2 id="about-title" style="margin: 0 0 10px 0; font-size: 24px; font-weight: 900; background: linear-gradient(to left, #2dd4bf, var(--accent)); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">درع الفطرة | FitraShield</h2>
+        
+        <!-- Version -->
+        <p style="color: var(--text-muted); font-size: 13px; margin: 0 0 20px 0; font-family: 'Outfit', sans-serif;">Version 1.0.0</p>
+        
+        <!-- Description -->
+        <p id="about-description" style="color: var(--text-main); font-size: 14px; line-height: 1.8; max-width: 600px; margin: 0 auto 25px auto;">
+          إضافة ذكية ومحلية 100% تهدف إلى صيانة الفطرة السليمة وحماية العقول ونقاء القلوب من مخاطر المحتوى الإباحي والمواقع الضارة على شبكة الإنترنت، دون الحاجة للاتصال بخوادم خارجية لضمان السرعة والخصوصية المطلقة لعائلتك.
+        </p>
+        
+        <!-- Divider -->
+        <div style="width: 150px; height: 1px; background: var(--border-color); margin: 0 auto 25px auto;"></div>
+        
+        <!-- Developer Info -->
+        <p id="about-developer-label" style="color: var(--text-muted); font-size: 12px; margin-bottom: 5px;">تطوير وتصميم:</p>
+        <h3 id="about-developer-name" style="color: var(--accent-hover); font-size: 18px; font-weight: 700; margin: 0;">أحمد إبراهيم</h3>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════ المودال القابل لإعادة الاستخدام ═══════════ -->
+  <div id="modal-overlay" class="modal-overlay">
+    <div class="modal-card">
+      <div id="modal-title" class="modal-title"></div>
+      <div id="modal-body" class="modal-body"></div>
+      <div id="modal-input-area"></div>
+      <div class="modal-actions">
+        <button id="modal-confirm" class="btn btn-primary">تأكيد</button>
+        <button id="modal-cancel" class="btn btn-secondary">إلغاء</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════ رسالة التنبيه (Toast) ═══════════ -->
+  <div id="toast" class="toast-msg"></div>
+
+  <script src="options.js"></script>
+</body>
+</html>

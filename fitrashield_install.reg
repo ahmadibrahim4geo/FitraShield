@@ -1,0 +1,46 @@
+Windows Registry Editor Version 5.00
+
+; =================================================================================
+; درع الفطرة (FitraShield) - ملف حماية المتصفحات على مستوى نظام التشغيل (توليد تلقائي)
+; =================================================================================
+
+; ─── 1. حماية جوجل كروم (Google Chrome) ───
+
+; (تعليق مؤقت للتجربة المحلية لتجنب حذف الأداة)
+; [HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Google\Chrome\ExtensionInstallForcelist]
+; "1"="[YOUR_EXTENSION_ID_HERE];https://clients2.google.com/service/update2/crx"
+
+; السماح بوضع التصفح الخفي (Incognito Mode) مع حمايته بالأداة
+[HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Google\Chrome]
+"IncognitoModeAvailability"=dword:00000000
+"ForceGoogleSafeSearch"=dword:00000001
+"ForceYouTubeRestrict"=dword:00000002
+
+; إجبار المتصفح على تشغيل الأداة في وضع التصفح الخفي تلقائياً فور التثبيت
+[HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Google\Chrome\ExtensionSettings]
+"[YOUR_EXTENSION_ID_HERE]"="{\"allowed_in_incognito\":true}"
+
+; تسجيل المساعد المحلي في نظام التشغيل لجوجل كروم للمستخدم الحالي
+[HKEY_CURRENT_USER\Software\Google\Chrome\NativeMessagingHosts\com.fitrashield.helper]
+@="C:\\Users\\ahmad\\Desktop\\FitraShield\\com.fitrashield.helper.json"
+
+
+; ─── 2. حماية مايكروسوفت إيدج (Microsoft Edge) ───
+
+; (تعليق مؤقت للتجربة المحلية لتجنب حذف الأداة)
+; [HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Edge\ExtensionInstallForcelist]
+; "1"="[YOUR_EXTENSION_ID_HERE];https://clients2.google.com/service/update2/crx"
+
+; السماح بوضع التصفح الخاص (InPrivate Mode) مع حمايته بالأداة
+[HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Edge]
+"InPrivateModeAvailability"=dword:00000000
+"ForceGoogleSafeSearch"=dword:00000001
+"ForceYouTubeRestrict"=dword:00000002
+
+; إجبار إيدج على تشغيل الأداة في وضع التصفح الخاص تلقائياً فور التثبيت
+[HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Edge\ExtensionSettings]
+"[YOUR_EXTENSION_ID_HERE]"="{\"allowed_in_incognito\":true}"
+
+; تسجيل المساعد المحلي في نظام التشغيل لمايكروسوفت إيدج للمستخدم الحالي
+[HKEY_CURRENT_USER\Software\Microsoft\Edge\NativeMessagingHosts\com.fitrashield.helper]
+@="C:\\Users\\ahmad\\Desktop\\FitraShield\\com.fitrashield.helper.json"

@@ -1,0 +1,55 @@
+{
+  "manifest_version": 3,
+  "name": "درع الفطرة | FitraShield",
+  "version": "1.0.0",
+  "description": "إضافة ذكية ومحلية لحجب المواقع الإباحية وحماية الفطرة والإشراف الأبوي — تعمل محلياً 100% بدون سيرفرات خارجية.",
+  "icons": {
+    "16": "icons/shield-active-16.png",
+    "48": "icons/shield-active-48.png",
+    "128": "icons/shield-active-128.png"
+  },
+  "permissions": [
+    "declarativeNetRequest",
+    "declarativeNetRequestFeedback",
+    "storage",
+    "tabs",
+    "webNavigation",
+    "nativeMessaging",
+    "alarms"
+  ],
+  "host_permissions": [
+    "<all_urls>"
+  ],
+  "background": {
+    "service_worker": "background.js"
+  },
+  "action": {
+    "default_popup": "popup.html",
+    "default_icon": {
+      "16": "icons/shield-active-16.png",
+      "48": "icons/shield-active-48.png",
+      "128": "icons/shield-active-128.png"
+    }
+  },
+  "options_page": "options.html",
+  "declarative_net_request": {
+    "rule_resources": [
+      {
+        "id": "ruleset_main",
+        "enabled": true,
+        "path": "rules.json"
+      },
+      {
+        "id": "ruleset_safesearch",
+        "enabled": true,
+        "path": "rules_safesearch.json"
+      }
+    ]
+  },
+  "web_accessible_resources": [
+    {
+      "resources": ["blocked.html", "icons/*"],
+      "matches": ["<all_urls>"]
+    }
+  ]
+}

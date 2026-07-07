@@ -1,0 +1,144 @@
+[
+  {
+    "id": 9001,
+    "priority": 2,
+    "action": {
+      "type": "redirect",
+      "redirect": {
+        "transform": {
+          "queryTransform": {
+            "addOrReplaceParams": [
+              { "key": "safe", "value": "active" }
+            ]
+          }
+        }
+      }
+    },
+    "condition": {
+      "requestDomains": ["google.com", "google.com.eg", "google.co.uk", "google.ae", "google.com.sa", "google.com.kw", "google.com.qa", "google.com.bh", "google.com.om", "google.jo", "google.com.lb", "google.dz", "google.co.ma", "google.tn", "google.com.ly", "google.iq"],
+      "urlFilter": "*search*",
+      "resourceTypes": ["main_frame"]
+    }
+  },
+  {
+    "id": 9002,
+    "priority": 2,
+    "action": {
+      "type": "redirect",
+      "redirect": {
+        "transform": {
+          "queryTransform": {
+            "addOrReplaceParams": [
+              { "key": "adlt", "value": "strict" }
+            ]
+          }
+        }
+      }
+    },
+    "condition": {
+      "requestDomains": ["bing.com"],
+      "urlFilter": "*search*",
+      "resourceTypes": ["main_frame"]
+    }
+  },
+  {
+    "id": 9003,
+    "priority": 2,
+    "action": {
+      "type": "redirect",
+      "redirect": {
+        "transform": {
+          "queryTransform": {
+            "addOrReplaceParams": [
+              { "key": "kp", "value": "1" }
+            ]
+          }
+        }
+      }
+    },
+    "condition": {
+      "requestDomains": ["duckduckgo.com"],
+      "resourceTypes": ["main_frame"]
+    }
+  },
+  {
+    "id": 9004,
+    "priority": 2,
+    "action": {
+      "type": "modifyHeaders",
+      "requestHeaders": [
+        {
+          "header": "YouTube-Restrict",
+          "operation": "set",
+          "value": "Strict"
+        }
+      ]
+    },
+    "condition": {
+      "requestDomains": ["youtube.com", "www.youtube.com", "m.youtube.com", "youtube-nocookie.com"],
+      "resourceTypes": ["main_frame", "sub_frame", "xmlhttprequest"]
+    }
+  },
+  {
+    "id": 9005,
+    "priority": 2,
+    "action": {
+      "type": "redirect",
+      "redirect": {
+        "transform": {
+          "queryTransform": {
+            "addOrReplaceParams": [
+              { "key": "vm", "value": "r18" }
+            ]
+          }
+        }
+      }
+    },
+    "condition": {
+      "requestDomains": ["search.yahoo.com"],
+      "resourceTypes": ["main_frame"]
+    }
+  },
+  {
+    "id": 9006,
+    "priority": 2,
+    "action": {
+      "type": "redirect",
+      "redirect": {
+        "transform": {
+          "queryTransform": {
+            "addOrReplaceParams": [
+              { "key": "family", "value": "yes" }
+            ]
+          }
+        }
+      }
+    },
+    "condition": {
+      "requestDomains": ["yandex.com", "yandex.ru", "yandex.by", "yandex.kz", "yandex.uz"],
+      "urlFilter": "*search*",
+      "resourceTypes": ["main_frame"]
+    }
+  },
+  {
+    "id": 9007,
+    "priority": 2,
+    "action": {
+      "type": "redirect",
+      "redirect": {
+        "transform": {
+          "queryTransform": {
+            "addOrReplaceParams": [
+              { "key": "safe", "value": "1" }
+            ]
+          }
+        }
+      }
+    },
+    "condition": {
+      "requestDomains": ["ecosia.org"],
+      "urlFilter": "*search*",
+      "resourceTypes": ["main_frame"]
+    }
+  }
+]
