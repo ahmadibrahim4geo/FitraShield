@@ -4,11 +4,13 @@
 
 # 🛡️ درع الفطرة — FitraShield
 
-### [العربية](#-درع-الفطرة---fitrashield) | [English](#-fitrashield---parental-protection-system)
+### [العربية](#arabic) | [English](#english)
 
 ---
 
 </div>
+
+<div id="arabic"></div>
 
 # 🛡️ درع الفطرة — FitraShield
 ### منظومة حماية رقمية محلية 100% لصيانة الفطرة السليمة وحماية العائلات
@@ -184,6 +186,8 @@
 
 ---
 ---
+
+<div id="english"></div>
 
 # 🛡️ FitraShield — Parental Protection System
 ### 100% Local Browser Extension & OS Enforcer to Safeguard Family Purity
