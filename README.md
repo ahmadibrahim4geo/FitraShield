@@ -167,10 +167,13 @@
 * **⭐ ادعمنا بنجمة على GitHub:** تقييمك للمستودع بالنجمة يرفع من ترتيبه ويساعد في وصوله لآلاف الآباء والأمهات الباحثين عن حلول لحماية أبنائهم.
 * **💸 الدعم المادي المباشر:** يساهم دعمك المادي في حجز السيرفرات، دفع رسوم المتاجر، وتوفير التفرغ الكامل لتطوير خوارزميات الذكاء الاصطناعي والحفاظ على مجانية الأداة.
   * *يمكنك التبرع لدعم تكاليف السيرفرات والمتاجر عبر الطرق التالية:*
-    * **PayPal:** `[رابط حساب PayPal الخاص بك أو بريدك الإلكتروني هنا]`
-    * **Buy Me a Coffee:** `[رابط حساب Buy Me a Coffee هنا]`
-    * **Vodafone Cash / InstaPay (مصر):** `[رابط أو رقم المحفظة المحلية هنا]`
-    * **Crypto Wallet:** `[عنوان محفظة عملات رقمية USDT أو BTC هنا]`
+    * **InstaPay (مصر):**
+      - رابط الدفع المباشر: [اضغط هنا لإرسال الدعم عبر InstaPay](https://ipn.eg/S/ahmadibrahim.nbe/instapay/0lvjsy)
+      - عنوان الدفع (Address): `ahmadibrahim.nbe@instapay`
+    * **Vodafone Cash (فودافون كاش - مصر):**
+      - رقم المحفظة: `01070619064`
+    * **GitHub Sponsors (قيد المراجعة حالياً):**
+      - يمكنك دعمنا عبر الملف الشخصي [ahmadibrahim4geo](https://github.com/sponsors/ahmadibrahim4geo) بمجرد اكتمال مراجعة جيت هاب للملف.
 * **🔊 نشر الفكرة:** شارك المشروع في مجموعات الماميز والآباء والمهتمين بالتربية الرقمية الصالحة.
 
 ---
@@ -343,10 +346,13 @@ We welcome developers, designers, and translators to contribute:
 * **⭐ Star this Repository:** Giving us a star on GitHub boosts visibility and helps search algorithms recommend this to families looking for child safety tools.
 * **💸 Donate Directly:** Your support will fund developer fees, cloud database instances, and dedicated developer hours.
   * *You can donate to support store fees and server costs via:*
-    * **PayPal:** `[Your PayPal Link or Email Here]`
-    * **Buy Me a Coffee:** `[Your Buy Me a Coffee link here]`
-    * **Vodafone Cash / InstaPay (Egypt):** `[Your Local Wallet Number Here]`
-    * **Crypto Wallet:** `[USDT / BTC Address Here]`
+    * **InstaPay (Egypt):**
+      - Direct Payment Link: [Click here to send support via InstaPay](https://ipn.eg/S/ahmadibrahim.nbe/instapay/0lvjsy)
+      - Payment Address: `ahmadibrahim.nbe@instapay`
+    * **Vodafone Cash (Egypt):**
+      - Wallet Number: `01070619064`
+    * **GitHub Sponsors (Currently Pending Review):**
+      - You can support us via our profile [ahmadibrahim4geo](https://github.com/sponsors/ahmadibrahim4geo) as soon as GitHub completes the review.
 * **🔊 Spread the Word:** Share this project on parenting groups, school forums, and digital safety communities.
 
 ---
