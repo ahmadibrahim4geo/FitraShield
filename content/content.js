@@ -14,7 +14,9 @@ chrome.runtime.sendMessage({ type: 'GET_BLUR_SETTINGS' }, (response) => {
     FitraBlurEngine.init({
       enabled: response.blurEnabled,
       sensitivity: response.blurSensitivity || 'standard',
-      whitelist: response.blurWhitelist || []
+      whitelist: response.blurWhitelist || [],
+      blurRadius: response.blurRadius ?? 30,
+      blurGrayscale: response.blurGrayscale !== undefined ? response.blurGrayscale : true
     });
   }
 });
