@@ -313,7 +313,8 @@ const FitraBlurEngine = (() => {
       return;
     }
 
-    const src = imgElement.src;
+    // استخدام currentSrc للحصول على الرابط الفعلي المعروض في المتصفح عند استخدام srcset
+    const src = imgElement.currentSrc || imgElement.src;
     if (!src || src.startsWith('data:image/svg') || src.length > 2048) {
       removePendingBlur(imgElement);
       return;
@@ -514,7 +515,7 @@ const FitraBlurEngine = (() => {
           } else if (mutation.attributeName === 'data-fs-status') {
             // إذا قام كود الموقع بإزالة حالة الحجب الخاصة بنا، أعد فرضها فوراً من الكاش لمنع كشف الصورة
             const currentStatus = img.dataset.fsStatus;
-            const src = img.src;
+            const src = img.currentSrc || img.src;
             if (!currentStatus && src && sessionCache.has(src)) {
               const cached = sessionCache.get(src);
               if (cached === 'BLOCK') {
