@@ -28,9 +28,9 @@ const FitraBlurEngine = (() => {
 
   // ---- عتبات تصنيف NSFWJS ----
   const SENSITIVITY_THRESHOLDS = {
-    strict:   { Porn: 0.3, Hentai: 0.3, Sexy: 0.3 },
-    standard: { Porn: 0.45, Hentai: 0.45, Sexy: 0.55 },
-    relaxed:  { Porn: 0.65, Hentai: 0.65, Sexy: 0.85 }
+    strict:   { Porn: 0.15, Hentai: 0.15, Sexy: 0.15 },
+    standard: { Porn: 0.35, Hentai: 0.35, Sexy: 0.45 },
+    relaxed:  { Porn: 0.6, Hentai: 0.6, Sexy: 0.7 }
   };
 
   // تطبيق قيم CSS المخصصة بناءً على إعدادات الوالدين
@@ -77,7 +77,7 @@ const FitraBlurEngine = (() => {
     MAX_ERRORS: 5,
     RESET_AFTER: 30000, // 30 ثانية
     open: false,
-
+ 
     recordError() {
       this.errorCount++;
       if (this.errorCount >= this.MAX_ERRORS) {
@@ -110,6 +110,9 @@ const FitraBlurEngine = (() => {
     enqueue(imgElement) {
       if (imgElement.dataset.fsStatus && imgElement.dataset.fsStatus !== 'pending') return;
 
+      // تطبيق التضبيب الوقائي فوراً وبشكل فوري لحجب الصورة قبل بدء معالجتها أو تصنيفها
+      applyPendingBlur(imgElement);
+
       const rect = imgElement.getBoundingClientRect();
       const inViewport = rect.bottom > 0 && rect.top < (window.innerHeight || document.documentElement.clientHeight);
       
@@ -141,7 +144,7 @@ const FitraBlurEngine = (() => {
       }
 
       batch.forEach(img => {
-        applyPendingBlur(img);
+        // تم تطبيق التضبيب بالفعل في مرحلة enqueue لمنع وميض الصور غير المفحوصة
         if (img.complete && img.naturalWidth > 0) {
           queueImageForCheck(img);
         } else {

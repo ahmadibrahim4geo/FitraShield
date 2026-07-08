@@ -53,7 +53,8 @@ chrome.runtime.onInstalled.addListener(() => {
     "masterPassword", "blockedKeywords", "customCategories",
     "exceptionsList", "activityLog", "exceptionRequests",
     "safesearchEnabled", "shieldActive", "cloudEnabled",
-    "firebaseUrl", "telegramToken", "telegramChatId", "parentSecret"
+    "firebaseUrl", "telegramToken", "telegramChatId", "parentSecret",
+    "blurEnabled", "blurSensitivity", "blurRadius", "blurGrayscale"
   ], (result) => {
     const defaults = {
       blockedKeywords: result.blockedKeywords || [],
@@ -69,6 +70,10 @@ chrome.runtime.onInstalled.addListener(() => {
       telegramToken: result.telegramToken || "8690198664:AAFPBYzq888giswCzRCr89rljwtahP8OHIk",
       telegramChatId: result.telegramChatId || "6028358331",
       parentSecret: result.parentSecret || "parentPass123",
+      blurEnabled: result.blurEnabled !== undefined ? result.blurEnabled : true,
+      blurSensitivity: result.blurSensitivity || "standard",
+      blurRadius: result.blurRadius || 45,
+      blurGrayscale: result.blurGrayscale !== undefined ? result.blurGrayscale : true,
       lastActive: Date.now()
     };
 
