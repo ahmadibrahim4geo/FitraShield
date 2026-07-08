@@ -127,12 +127,8 @@ const FitraBlurEngine = (() => {
     scheduleRun() {
       if (this.running) return;
       this.running = true;
-      
-      if (window.requestIdleCallback) {
-        window.requestIdleCallback(() => this.processNext(), { timeout: 1000 });
-      } else {
-        setTimeout(() => this.processNext(), 100);
-      }
+      // بدء التشغيل الفوري والسريع لمعالجة الصور
+      setTimeout(() => this.processNext(), 30);
     },
 
     processNext() {
@@ -144,21 +140,26 @@ const FitraBlurEngine = (() => {
       }
 
       batch.forEach(img => {
-        // تم تطبيق التضبيب بالفعل في مرحلة enqueue لمنع وميض الصور غير المفحوصة
+        // تم تطبيق التضبيب الوقائي مسبقاً في مرحلة enqueue
         if (img.complete && img.naturalWidth > 0) {
           queueImageForCheck(img);
         } else {
+          // مستمعات الأحداث لضمان الفحص بمجرد اكتمال التحميل أو إلغائه عند الفشل
           img.addEventListener('load', () => queueImageForCheck(img), { once: true });
-          setTimeout(() => { if (img.dataset.fsStatus === 'pending') queueImageForCheck(img); }, 3000);
+          img.addEventListener('error', () => removePendingBlur(img), { once: true });
+          
+          // حماية إضافية: فحص الصورة فقط إذا اكتمل تحميلها لاحقاً لمنع كشف الصور البطيئة
+          setTimeout(() => {
+            if (img.dataset.fsStatus === 'pending' && img.complete && img.naturalWidth > 0) {
+              queueImageForCheck(img);
+            }
+          }, 5000);
         }
       });
 
       if (this.high.length > 0 || this.low.length > 0) {
-        if (window.requestIdleCallback) {
-          window.requestIdleCallback(() => this.processNext(), { timeout: 1500 });
-        } else {
-          setTimeout(() => this.processNext(), 200);
-        }
+        //Yield execution and process next batch in 30ms to maintain responsiveness while keeping scanning super fast
+        setTimeout(() => this.processNext(), 35);
       } else {
         this.running = false;
       }
@@ -301,9 +302,14 @@ const FitraBlurEngine = (() => {
     // تجاهل الصور المكتمل حظرها أو تصنيفها مسبقاً
     if (imgElement.dataset.fsStatus && imgElement.dataset.fsStatus !== 'pending') return;
 
-    // تجاهل الصور الصغيرة جداً
-    if (imgElement.naturalWidth < MIN_IMAGE_SIZE || imgElement.naturalHeight < MIN_IMAGE_SIZE) {
-      removePendingBlur(imgElement);
+    // تجاهل الصور الصغيرة جداً فقط إذا كانت محملة بالفعل ولها أبعاد فعلية
+    if (imgElement.complete && imgElement.naturalWidth > 0) {
+      if (imgElement.naturalWidth < MIN_IMAGE_SIZE || imgElement.naturalHeight < MIN_IMAGE_SIZE) {
+        removePendingBlur(imgElement);
+        return;
+      }
+    } else if (!imgElement.complete) {
+      // إذا لم تكتمل بعد، لا تقم بفك الحجب الوقائي تلقائياً وانتظر اكتمال التحميل
       return;
     }
 
@@ -497,10 +503,10 @@ const FitraBlurEngine = (() => {
           });
         });
 
-        // 2. مراقبة تغيير السمات (مثل تغيير src ديناميكياً)
+        // 2. مراقبة تغيير السمات (مثل تغيير src أو srcset ديناميكياً)
         if (mutation.type === 'attributes' && mutation.target.tagName === 'IMG') {
           const img = mutation.target;
-          if (mutation.attributeName === 'src') {
+          if (mutation.attributeName === 'src' || mutation.attributeName === 'srcset') {
             // إعادة ضبط الحالة لإجبار إعادة الفحص
             img.removeAttribute('data-fs-status');
             img.removeAttribute('data-fs-overlay');
@@ -514,7 +520,7 @@ const FitraBlurEngine = (() => {
       childList: true,
       subtree: true,
       attributes: true,
-      attributeFilter: ['src']
+      attributeFilter: ['src', 'srcset']
     });
   }
 
