@@ -3,21 +3,21 @@
  */
 
 /* 1. Temporary protective blur applied during model classification */
-img[data-fs-status="pending"] {
+[data-fs-status="pending"] {
   filter: blur(var(--fs-blur-radius, 45px)) grayscale(var(--fs-grayscale, 80%)) !important;
   transition: filter 0.3s ease;
   pointer-events: none; /* Prevent interaction while checking */
 }
 
 /* 2. Permanent blur applied to identified inappropriate images */
-img[data-fs-status="blocked"] {
+[data-fs-status="blocked"] {
   filter: blur(var(--fs-blur-radius, 45px)) grayscale(var(--fs-grayscale, 100%)) !important;
   cursor: pointer !important;
   pointer-events: auto !important;
 }
 
 /* 3. Safe images with blur fully removed */
-img[data-fs-status="safe"] {
+[data-fs-status="safe"] {
   filter: none !important;
   transition: filter 0.35s cubic-bezier(0.4, 0, 0.2, 1);
   pointer-events: auto !important;

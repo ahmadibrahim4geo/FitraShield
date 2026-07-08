@@ -12,6 +12,29 @@ const FitraBlurEngine = (() => {
   const sessionCache = new Map();    // imgURL → 'ALLOW'|'BLOCK'
   const MIN_IMAGE_SIZE = 40;         // تجاهل الصور الصغيرة جداً (أيقونات)
 
+  // دالة لاستخراج رابط الخلفية البصرية لعناصر الـ CSS
+  function getBackgroundImageUrl(element) {
+    if (!element || element.nodeType !== Node.ELEMENT_NODE) return null;
+    
+    // محاولة قراءة النمط المباشر (Inline style) أولاً كونه الأسرع
+    const inlineBg = element.style.backgroundImage || element.style.background;
+    if (inlineBg && inlineBg !== 'none') {
+      const match = inlineBg.match(/url\((['"]?)(.*?)\1\)/);
+      if (match && match[2]) return match[2];
+    }
+
+    // محاولة قراءة النمط المحسوب (Computed Style) إذا كان متوفراً
+    try {
+      const computedBg = window.getComputedStyle(element).backgroundImage;
+      if (computedBg && computedBg !== 'none') {
+        const match = computedBg.match(/url\((['"]?)(.*?)\1\)/);
+        if (match && match[2]) return match[2];
+      }
+    } catch (e) {}
+
+    return null;
+  }
+
   // عنصر Canvas مشترك لتسريع فك وتصغير مصفوفات بكسلات الصور
   let sharedCanvas = null;
   let sharedCtx = null;
@@ -331,19 +354,31 @@ const FitraBlurEngine = (() => {
       return;
     }
 
-    // تجاهل الصور الصغيرة جداً فقط إذا كانت محملة بالفعل ولها أبعاد فعلية
-    if (imgElement.complete && imgElement.naturalWidth > 0) {
-      if (imgElement.naturalWidth < MIN_IMAGE_SIZE || imgElement.naturalHeight < MIN_IMAGE_SIZE) {
-        removePendingBlur(imgElement);
+    // 2. التحقق من أبعاد العنصر (للصور العادية أو عناصر الخلفيات) لتجنب حجب الأيقونات المصغرة
+    if (imgElement.tagName === 'IMG') {
+      if (imgElement.complete && imgElement.naturalWidth > 0) {
+        if (imgElement.naturalWidth < MIN_IMAGE_SIZE || imgElement.naturalHeight < MIN_IMAGE_SIZE) {
+          removePendingBlur(imgElement);
+          return;
+        }
+      } else if (!imgElement.complete) {
+        // إذا لم تكتمل بعد، لا تقم بفك الحجب الوقائي تلقائياً وانتظر اكتمال التحميل
         return;
       }
-    } else if (!imgElement.complete) {
-      // إذا لم تكتمل بعد، لا تقم بفك الحجب الوقائي تلقائياً وانتظر اكتمال التحميل
-      return;
+    } else {
+      // عناصر الخلفيات البصرية (مثل div)
+      const width = imgElement.clientWidth || imgElement.offsetWidth || 0;
+      const height = imgElement.clientHeight || imgElement.offsetHeight || 0;
+      if (width > 0 && height > 0) {
+        if (width < MIN_IMAGE_SIZE || height < MIN_IMAGE_SIZE) {
+          removePendingBlur(imgElement);
+          return;
+        }
+      }
     }
 
-    // استخدام currentSrc للحصول على الرابط الفعلي المعروض في المتصفح عند استخدام srcset
-    const src = imgElement.currentSrc || imgElement.src;
+    // استخدام currentSrc للصور العادية، أو استخراج الخلفية للعناصر الأخرى
+    const src = imgElement.tagName === 'IMG' ? (imgElement.currentSrc || imgElement.src) : getBackgroundImageUrl(imgElement);
     if (!src || src.startsWith('data:image/svg') || src.length > 2048) {
       removePendingBlur(imgElement);
       return;
@@ -367,8 +402,8 @@ const FitraBlurEngine = (() => {
     // تسجيل فحص إحصائي
     incrementTotalStats();
 
-    // حالة 1: صورة Base64 محلية مشفرة كـ Data URL
-    if (src.startsWith('data:image/')) {
+    // حالة 1: صورة Base64 محلية مشفرة كـ Data URL (لصور IMG فقط)
+    if (src.startsWith('data:image/') && imgElement.tagName === 'IMG') {
       try {
         const ctx = getSharedContext();
         ctx.clearRect(0, 0, 224, 224);
@@ -387,8 +422,8 @@ const FitraBlurEngine = (() => {
       return;
     }
 
-    // حالة 2: صورة خارجية من نطاق مختلف (CORS) أو محلية عادية
-    const isCrossOrigin = !src.startsWith(window.location.origin);
+    // حالة 2: صورة خارجية من نطاق مختلف (CORS) أو محلية عادية أو عناصر خلفيات
+    const isCrossOrigin = imgElement.tagName !== 'IMG' || !src.startsWith(window.location.origin);
     
     if (isCrossOrigin) {
       // إرسال للخلفية لجلبها وتصنيفها في Offscreen
@@ -446,12 +481,6 @@ const FitraBlurEngine = (() => {
     if (imgElement.dataset.fsOverlay === 'true') return;
     imgElement.dataset.fsOverlay = 'true';
 
-    // لف الصورة بحاوية div للحفاظ على موضع القفل
-    const wrapper = document.createElement('div');
-    wrapper.className = 'fs-img-wrapper';
-    imgElement.parentNode.insertBefore(wrapper, imgElement);
-    wrapper.appendChild(imgElement);
-
     const overlay = document.createElement('div');
     overlay.className = 'fs-blur-overlay';
     overlay.title = 'درع الفطرة: صورة محجوبة لحماية المحتوى — انقر لعرضها مؤقتاً';
@@ -460,9 +489,23 @@ const FitraBlurEngine = (() => {
     lockIcon.className = 'fs-lock-icon';
     lockIcon.src = chrome.runtime.getURL('icons/lock-overlay.svg');
     lockIcon.alt = '🔐';
-
     overlay.appendChild(lockIcon);
-    wrapper.appendChild(overlay);
+
+    if (imgElement.tagName === 'IMG') {
+      // لف الصورة بحاوية div للحفاظ على موضع القفل
+      const wrapper = document.createElement('div');
+      wrapper.className = 'fs-img-wrapper';
+      imgElement.parentNode.insertBefore(wrapper, imgElement);
+      wrapper.appendChild(imgElement);
+      wrapper.appendChild(overlay);
+    } else {
+      // بالنسبة لعناصر الخلفيات (مثل div)، نضيف القفل كابن مباشر بوضعية مطلقة
+      const computedPos = window.getComputedStyle(imgElement).position;
+      if (computedPos === 'static') {
+        imgElement.style.position = 'relative';
+      }
+      imgElement.appendChild(overlay);
+    }
 
     overlay.addEventListener('click', (e) => {
       e.preventDefault();
@@ -480,11 +523,12 @@ const FitraBlurEngine = (() => {
           if (response?.verified) {
             imgElement.dataset.fsStatus = 'safe';
             imgElement.dataset.fsOverlay = 'false';
-            imgElement.parentNode.querySelector('.fs-blur-overlay')?.remove();
             
-            // فك التغليف
-            if (imgElement.parentNode.classList.contains('fs-img-wrapper')) {
+            if (imgElement.parentNode && imgElement.parentNode.classList.contains('fs-img-wrapper')) {
+              imgElement.parentNode.querySelector('.fs-blur-overlay')?.remove();
               imgElement.parentNode.replaceWith(imgElement);
+            } else {
+              imgElement.querySelector('.fs-blur-overlay')?.remove();
             }
             
             FitraPasswordModal.hide();
@@ -511,8 +555,17 @@ const FitraBlurEngine = (() => {
 
   // ---- مسح الصور الحالية عند التحميل الأول ----
   function scanExistingImages() {
+    // 1. فحص عناصر الصور العادية
     document.querySelectorAll('img').forEach(img => {
       InspectionQueue.enqueue(img);
+    });
+
+    // 2. فحص عناصر الخلفيات البصرية (background-image)
+    document.querySelectorAll('[style*="background-image"], [style*="background"]').forEach(el => {
+      const bgUrl = getBackgroundImageUrl(el);
+      if (bgUrl) {
+        InspectionQueue.enqueue(el);
+      }
     });
   }
 
@@ -526,31 +579,53 @@ const FitraBlurEngine = (() => {
 
           if (node.tagName === 'IMG') {
             InspectionQueue.enqueue(node);
+          } else {
+            const bgUrl = getBackgroundImageUrl(node);
+            if (bgUrl) {
+              InspectionQueue.enqueue(node);
+            }
           }
 
           node.querySelectorAll?.('img').forEach(img => {
             InspectionQueue.enqueue(img);
           });
+
+          node.querySelectorAll?.('[style*="background-image"], [style*="background"]').forEach(el => {
+            const bgUrl = getBackgroundImageUrl(el);
+            if (bgUrl) {
+              InspectionQueue.enqueue(el);
+            }
+          });
         });
 
-        // 2. مراقبة تغيير السمات (مثل تغيير src أو srcset أو إزالة سمة الحجب)
-        if (mutation.type === 'attributes' && mutation.target.tagName === 'IMG') {
-          const img = mutation.target;
-          if (mutation.attributeName === 'src' || mutation.attributeName === 'srcset') {
-            // إعادة ضبط الحالة لإجبار إعادة الفحص
-            img.removeAttribute('data-fs-status');
-            img.removeAttribute('data-fs-overlay');
-            InspectionQueue.enqueue(img);
-          } else if (mutation.attributeName === 'data-fs-status') {
-            // إذا قام كود الموقع بإزالة حالة الحجب الخاصة بنا، أعد فرضها فوراً من الكاش لمنع كشف الصورة
-            const currentStatus = img.dataset.fsStatus;
-            const src = img.currentSrc || img.src;
+        // 2. مراقبة تغيير السمات (مثل تغيير src أو srcset أو إزالة سمة الحجب أو تغيير الـ style)
+        if (mutation.type === 'attributes') {
+          const target = mutation.target;
+          
+          if (target.tagName === 'IMG') {
+            if (mutation.attributeName === 'src' || mutation.attributeName === 'srcset') {
+              target.removeAttribute('data-fs-status');
+              target.removeAttribute('data-fs-overlay');
+              InspectionQueue.enqueue(target);
+            }
+          } else if (mutation.attributeName === 'style') {
+            const bgUrl = getBackgroundImageUrl(target);
+            if (bgUrl) {
+              target.removeAttribute('data-fs-status');
+              target.removeAttribute('data-fs-overlay');
+              InspectionQueue.enqueue(target);
+            }
+          }
+
+          if (mutation.attributeName === 'data-fs-status') {
+            const currentStatus = target.dataset.fsStatus;
+            const src = target.tagName === 'IMG' ? (target.currentSrc || target.src) : getBackgroundImageUrl(target);
             if (!currentStatus && src && sessionCache.has(src)) {
               const cached = sessionCache.get(src);
               if (cached === 'BLOCK') {
-                applyPermanentBlur(img);
+                applyPermanentBlur(target);
               } else if (cached === 'ALLOW') {
-                removePendingBlur(img);
+                removePendingBlur(target);
               }
             }
           }
@@ -562,7 +637,7 @@ const FitraBlurEngine = (() => {
       childList: true,
       subtree: true,
       attributes: true,
-      attributeFilter: ['src', 'srcset', 'data-fs-status']
+      attributeFilter: ['src', 'srcset', 'style', 'data-fs-status']
     });
   }
 
