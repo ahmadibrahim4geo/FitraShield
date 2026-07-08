@@ -291,6 +291,28 @@ const FitraBlurEngine = (() => {
     return 'ALLOW';
   }
 
+  // التحقق الدلالي من البيانات الوصفية لرصد صور النساء والعلاقات الرومانسية فوراً
+  function containsWomanMetadata(imgElement) {
+    const textToSearch = [
+      imgElement.alt || '',
+      imgElement.title || '',
+      imgElement.src || '',
+      imgElement.getAttribute('aria-label') || '',
+      imgElement.parentNode?.tagName === 'A' ? (imgElement.parentNode.title || imgElement.parentNode.href || '') : ''
+    ].join(' ').toLowerCase();
+
+    const keywords = [
+      'امرأة', 'امرأه', 'نساء', 'بنت', 'بنات', 'فتاة', 'فتيات', 'سيدة', 'سيدات', 
+      'عارضة', 'عارضات', 'ممثلة', 'ممثلات', 'زوجة', 'زوجات', 'عروس', 'الزوجين', 'زوجين',
+      'حبيبين', 'الحبيبين', 'خطيبين', 'الخطيبين', 'رومانسية', 'الرومانسية', 'حضن', 'الاحضان', 'قبلة', 'القبلات', 'علاقة حميمة', 'العلاقة الحميمة',
+      'woman', 'women', 'girl', 'girls', 'lady', 'ladies', 'female', 'females', 
+      'actress', 'model', 'bride', 'wife', 'couple', 'couples', 'romance', 'romantic', 
+      'kiss', 'kissing', 'hug', 'hugging', 'intimate', 'intimacy'
+    ];
+
+    return keywords.some(keyword => textToSearch.includes(keyword));
+  }
+
   // ---- إرسال صورة لقائمة الانتظار للفحص ----
   function queueImageForCheck(imgElement) {
     // التحقق من قاطع التيار وقائياً
@@ -301,6 +323,13 @@ const FitraBlurEngine = (() => {
 
     // تجاهل الصور المكتمل حظرها أو تصنيفها مسبقاً
     if (imgElement.dataset.fsStatus && imgElement.dataset.fsStatus !== 'pending') return;
+
+    // 1. الفحص الدلالي السريع لرصد النساء والعلاقات الرومانسية
+    if (containsWomanMetadata(imgElement)) {
+      applyPermanentBlur(imgElement);
+      incrementBlockedStats();
+      return;
+    }
 
     // تجاهل الصور الصغيرة جداً فقط إذا كانت محملة بالفعل ولها أبعاد فعلية
     if (imgElement.complete && imgElement.naturalWidth > 0) {
