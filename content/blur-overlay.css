@@ -1,0 +1,71 @@
+/*
+ * FitraShield - Visual Protection Overlay Styles
+ */
+
+/* 1. Temporary protective blur applied during model classification */
+img[data-fs-status="pending"] {
+  filter: blur(var(--fs-blur-radius, 45px)) grayscale(var(--fs-grayscale, 80%)) !important;
+  transition: filter 0.3s ease;
+  pointer-events: none; /* Prevent interaction while checking */
+}
+
+/* 2. Permanent blur applied to identified inappropriate images */
+img[data-fs-status="blocked"] {
+  filter: blur(var(--fs-blur-radius, 45px)) grayscale(var(--fs-grayscale, 100%)) !important;
+  cursor: pointer !important;
+  pointer-events: auto !important;
+}
+
+/* 3. Safe images with blur fully removed */
+img[data-fs-status="safe"] {
+  filter: none !important;
+  transition: filter 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+  pointer-events: auto !important;
+}
+
+/* 4. Glassmorphic lock overlay container */
+.fs-blur-overlay {
+  position: absolute !important;
+  top: 0 !important;
+  left: 0 !important;
+  width: 100% !important;
+  height: 100% !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  background: rgba(15, 23, 42, 0.15) !important;
+  backdrop-filter: blur(4px) !important;
+  -webkit-backdrop-filter: blur(4px) !important;
+  cursor: pointer !important;
+  z-index: 99999 !important;
+  border-radius: inherit !important;
+  transition: background-color 0.2s ease;
+}
+
+.fs-blur-overlay:hover {
+  background: rgba(15, 23, 42, 0.25) !important;
+}
+
+/* 5. Custom Lock Icon image */
+.fs-blur-overlay .fs-lock-icon {
+  width: 48px !important;
+  height: 48px !important;
+  min-width: 32px !important;
+  min-height: 32px !important;
+  opacity: 0.95 !important;
+  filter: drop-shadow(0 4px 6px rgba(0, 0, 0, 0.35)) !important;
+  transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.fs-blur-overlay:hover .fs-lock-icon {
+  transform: scale(1.1);
+}
+
+/* 6. Image wrapper container */
+.fs-img-wrapper {
+  position: relative !important;
+  display: inline-block !important;
+  max-width: 100% !important;
+  height: auto !important;
+  border-radius: inherit !important;
+}

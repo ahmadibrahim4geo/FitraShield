@@ -449,66 +449,6 @@
     </p>
   </div>
 
-  <script>
-    // ═══════════════════════════════════════════════════════
-    //  سكربت صفحة الحظر — درع الفطرة (FitraShield)
-    // ═══════════════════════════════════════════════════════
-
-    document.addEventListener('DOMContentLoaded', () => {
-      // ─── استخراج معلمات الرابط ───
-      const params = new URLSearchParams(window.location.search);
-      const originalUrl = params.get('url') || 'موقع غير معروف';
-      const reason = params.get('reason') || 'تطابق كلمة دلالية محظورة';
-      const keyword = params.get('keyword') || '';
-
-      // ─── عرض بيانات الحجب في صندوق المعلومات ───
-      document.getElementById('blocked-url').textContent = originalUrl;
-      document.getElementById('blocked-reason').textContent = reason;
-
-      // عرض الكلمة المرصودة فقط إذا كانت موجودة
-      if (keyword && keyword.trim() !== '') {
-        const keywordItem = document.getElementById('keyword-item');
-        const keywordBadge = document.getElementById('blocked-keyword');
-        keywordItem.style.display = '';
-        keywordBadge.textContent = keyword;
-      }
-
-      // ─── زر العودة للأمان ───
-      const btnBack = document.getElementById('btn-back');
-      btnBack.addEventListener('click', () => {
-        window.location.href = 'https://www.google.com';
-      });
-
-      // ─── زر طلب استثناء من الوالدين ───
-      const btnException = document.getElementById('btn-exception');
-      const confirmationMsg = document.getElementById('confirmation-msg');
-
-      btnException.addEventListener('click', () => {
-        // منع الضغط المتكرر
-        if (btnException.disabled) return;
-
-        // إرسال الطلب للخلفية لحفظه بأمان وموثوقية
-        if (typeof chrome !== 'undefined' && chrome.runtime && chrome.runtime.sendMessage) {
-          chrome.runtime.sendMessage({ action: "requestException", url: originalUrl }, (response) => {
-            if (response && response.success) {
-              showConfirmation();
-            }
-          });
-        } else {
-          // بيئة بدون بيئة الإضافات (للاختبار)
-          showConfirmation();
-        }
-      });
-
-      /**
-       * عرض رسالة التأكيد وتعطيل الزر
-       */
-      function showConfirmation() {
-        confirmationMsg.classList.add('visible');
-        btnException.disabled = true;
-        btnException.innerHTML = '<span>✅</span><span>تم إرسال الطلب</span>';
-      }
-    });
-  </script>
+  <script src="blocked.js"></script>
 </body>
 </html>

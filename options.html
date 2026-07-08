@@ -12,18 +12,50 @@
   <style>
     /* ═══════════════════════ متغيرات التصميم الرئيسية ═══════════════════════ */
     :root {
-      --bg-main: #0f172a;
-      --bg-card: rgba(30, 41, 59, 0.75);
-      --accent: #0d9488;
-      --accent-hover: #14b8a6;
+      --bg-main: #060b13;
+      --bg-card: rgba(13, 22, 38, 0.65);
+      --accent: #10b981;
+      --accent-hover: #34d399;
       --accent-gold: #d97706;
       --accent-gold-hover: #f59e0b;
       --text-main: #f8fafc;
       --text-muted: #94a3b8;
-      --border-color: rgba(255, 255, 255, 0.1);
+      --border-color: rgba(16, 185, 129, 0.15);
       --danger-color: #ef4444;
       --danger-hover: #dc2626;
-      --success-color: #22c55e;
+      --success-color: #10b981;
+    }
+
+    /* ═══════════════════════ إضاءات الخلفية التفاعلية ═══════════════════════ */
+    .ambient-glow-orb {
+      position: fixed;
+      border-radius: 50%;
+      filter: blur(100px);
+      opacity: 0.12;
+      z-index: -1;
+      pointer-events: none;
+      animation: floatOrb 20s infinite alternate ease-in-out;
+    }
+    .orb-1 {
+      width: 450px;
+      height: 450px;
+      background: radial-gradient(circle, #10b981 0%, rgba(16, 185, 129, 0) 70%);
+      top: -100px;
+      right: -100px;
+      animation-duration: 22s;
+    }
+    .orb-2 {
+      width: 500px;
+      height: 500px;
+      background: radial-gradient(circle, #065f46 0%, rgba(6, 95, 70, 0) 70%);
+      bottom: -150px;
+      left: -150px;
+      animation-duration: 28s;
+    }
+    @keyframes floatOrb {
+      0% { transform: translate(0, 0) scale(1) rotate(0deg); }
+      50% { transform: translate(80px, -60px) scale(1.1) rotate(180deg); }
+      100% { transform: translate(-50px, 70px) scale(0.95) rotate(360deg); }
     }
 
     /* ═══════════════════════ إعادة تهيئة والأساسيات ═══════════════════════ */
@@ -33,12 +65,16 @@
       margin: 0;
       padding: 0;
       font-family: 'Cairo', 'Outfit', sans-serif;
-      background: linear-gradient(135deg, var(--bg-main) 0%, #022c22 100%);
+      background: #060b13;
+      background-image: radial-gradient(at 0% 0%, rgba(16, 185, 129, 0.05) 0px, transparent 50%),
+                        radial-gradient(at 100% 100%, rgba(2, 44, 34, 0.12) 0px, transparent 50%);
       color: var(--text-main);
       min-height: 100vh;
       display: flex;
       justify-content: center;
       align-items: flex-start;
+      position: relative;
+      overflow-x: hidden;
     }
 
     /* ═══════════════════════ شريط التمرير المخصص ═══════════════════════ */
@@ -56,8 +92,8 @@
       background: var(--bg-card);
       border: 1px solid var(--border-color);
       border-radius: 24px;
-      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4), 0 0 50px rgba(13, 148, 136, 0.15);
-      backdrop-filter: blur(12px);
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4), 0 0 50px rgba(16, 185, 129, 0.12);
+      backdrop-filter: blur(20px);
       text-align: center;
       animation: fadeIn 0.5s ease-out;
     }
@@ -71,20 +107,20 @@
       stroke-width: 2;
       stroke-linecap: round;
       stroke-linejoin: round;
-      filter: drop-shadow(0 0 10px rgba(13, 148, 136, 0.5));
+      filter: drop-shadow(0 0 10px rgba(16, 185, 129, 0.5));
       animation: shieldPulse 3s infinite ease-in-out;
     }
 
     @keyframes shieldPulse {
-      0%, 100% { transform: scale(1); filter: drop-shadow(0 0 10px rgba(13, 148, 136, 0.5)); }
-      50% { transform: scale(1.04); filter: drop-shadow(0 0 20px rgba(13, 148, 136, 0.8)); }
+      0%, 100% { transform: scale(1); filter: drop-shadow(0 0 10px rgba(16, 185, 129, 0.5)); }
+      50% { transform: scale(1.04); filter: drop-shadow(0 0 20px rgba(16, 185, 129, 0.8)); }
     }
 
     .auth-title {
       font-size: 22px;
       font-weight: 900;
       margin-bottom: 10px;
-      background: linear-gradient(to left, #2dd4bf, var(--accent));
+      background: linear-gradient(to left, #34d399, var(--accent));
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
     }
@@ -126,7 +162,7 @@
     .form-input:focus {
       outline: none;
       border-color: var(--accent);
-      box-shadow: 0 0 12px rgba(13, 148, 136, 0.3);
+      box-shadow: 0 0 12px rgba(16, 185, 129, 0.3);
     }
 
     .form-input::placeholder {
@@ -154,41 +190,56 @@
 
     .btn-primary {
       background: var(--accent);
-      color: white;
+      color: #060b13;
     }
 
-    .btn-primary:hover { background: var(--accent-hover); }
+    .btn-primary:hover {
+      background: var(--accent-hover);
+      box-shadow: 0 0 15px rgba(16, 185, 129, 0.4);
+    }
 
     .btn-secondary {
-      background: rgba(255, 255, 255, 0.08);
+      background: rgba(255, 255, 255, 0.05);
       color: var(--text-main);
-      border: 1px solid var(--border-color);
+      border: 1px solid rgba(255, 255, 255, 0.08);
     }
 
-    .btn-secondary:hover { background: rgba(255, 255, 255, 0.13); }
+    .btn-secondary:hover {
+      background: rgba(255, 255, 255, 0.1);
+      border-color: rgba(255, 255, 255, 0.15);
+    }
 
     .btn-danger {
-      background: rgba(239, 68, 68, 0.15);
+      background: rgba(239, 68, 68, 0.12);
       color: var(--danger-color);
       border: 1px solid rgba(239, 68, 68, 0.2);
     }
 
-    .btn-danger:hover { background: rgba(239, 68, 68, 0.25); }
+    .btn-danger:hover {
+      background: rgba(239, 68, 68, 0.22);
+      border-color: rgba(239, 68, 68, 0.3);
+    }
 
     .btn-gold {
       background: var(--accent-gold);
       color: white;
     }
 
-    .btn-gold:hover { background: var(--accent-gold-hover); }
-
-    .btn-success {
-      background: rgba(34, 197, 94, 0.15);
-      color: var(--success-color);
-      border: 1px solid rgba(34, 197, 94, 0.2);
+    .btn-gold:hover {
+      background: var(--accent-gold-hover);
+      box-shadow: 0 0 15px rgba(217, 119, 6, 0.3);
     }
 
-    .btn-success:hover { background: rgba(34, 197, 94, 0.25); }
+    .btn-success {
+      background: rgba(16, 185, 129, 0.12);
+      color: var(--success-color);
+      border: 1px solid rgba(16, 185, 129, 0.2);
+    }
+
+    .btn-success:hover {
+      background: rgba(16, 185, 129, 0.22);
+      border-color: rgba(16, 185, 129, 0.3);
+    }
 
     .btn-sm {
       width: auto;
@@ -241,8 +292,8 @@
       background: var(--bg-card);
       border: 1px solid var(--border-color);
       border-radius: 24px;
-      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
-      backdrop-filter: blur(12px);
+      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5), 0 0 40px rgba(16, 185, 129, 0.05);
+      backdrop-filter: blur(20px);
       overflow: hidden;
       animation: fadeIn 0.5s ease-out;
     }
@@ -343,9 +394,124 @@
     .tab-content {
       display: none;
       padding: 28px;
+      animation: slideUpFade 0.45s cubic-bezier(0.16, 1, 0.3, 1) forwards;
     }
 
     .tab-content.active { display: block; }
+
+    @keyframes slideUpFade {
+      from { opacity: 0; transform: translateY(16px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* ═══════════════════════ شبكة الإحصائيات (Stats Grid) ═══════════════════════ */
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 18px;
+      margin-bottom: 28px;
+    }
+
+    @media (max-width: 768px) {
+      .stats-grid { grid-template-columns: 1fr; }
+    }
+
+    .stat-card {
+      background: rgba(15, 23, 42, 0.35);
+      border: 1px solid var(--border-color);
+      border-radius: 16px;
+      padding: 18px 20px;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .stat-card::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: linear-gradient(135deg, rgba(16, 185, 129, 0.05) 0%, transparent 100%);
+      opacity: 0;
+      transition: opacity 0.3s;
+    }
+
+    .stat-card:hover {
+      transform: translateY(-3px);
+      border-color: rgba(16, 185, 129, 0.4);
+      box-shadow: 0 12px 24px rgba(0, 0, 0, 0.3), 0 0 15px rgba(16, 185, 129, 0.1);
+    }
+
+    .stat-card:hover::before { opacity: 1; }
+
+    .stat-icon-wrapper {
+      width: 48px;
+      height: 48px;
+      border-radius: 12px;
+      background: rgba(16, 185, 129, 0.08);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--accent);
+      flex-shrink: 0;
+      transition: all 0.3s;
+    }
+
+    .stat-card:hover .stat-icon-wrapper {
+      background: var(--accent);
+      color: #060b13;
+      transform: scale(1.05);
+      box-shadow: 0 0 12px rgba(16, 185, 129, 0.4);
+    }
+
+    .stat-icon {
+      width: 24px;
+      height: 24px;
+      fill: none;
+      stroke: currentColor;
+      stroke-width: 2;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
+
+    .stat-info {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+
+    .stat-label {
+      font-size: 11px;
+      color: var(--text-muted);
+      font-weight: 600;
+    }
+
+    .stat-value {
+      font-size: 18px;
+      font-weight: 800;
+      color: var(--text-main);
+      font-family: 'Outfit', 'Cairo', sans-serif;
+    }
+
+    .text-emerald {
+      color: #10b981 !important;
+      text-shadow: 0 0 10px rgba(16, 185, 129, 0.3);
+    }
+
+    .text-paused {
+      color: #94a3b8 !important;
+    }
+
+    .pulse-animation {
+      animation: shieldPulseGlow 2s infinite ease-in-out;
+    }
+
+    @keyframes shieldPulseGlow {
+      0%, 100% { transform: scale(1); filter: drop-shadow(0 0 2px rgba(16, 185, 129, 0.4)); }
+      50% { transform: scale(1.06); filter: drop-shadow(0 0 8px rgba(16, 185, 129, 0.8)); }
+    }
 
     /* ═══════════════════════ عنوان القسم ═══════════════════════ */
     .section-title {
@@ -379,38 +545,42 @@
 
     /* ═══════════════════════ حاوية الجدول ═══════════════════════ */
     .table-container {
-      background: rgba(15, 23, 42, 0.4);
+      background: rgba(15, 23, 42, 0.3);
       border: 1px solid var(--border-color);
       border-radius: 16px;
       overflow: hidden;
       max-height: 420px;
       overflow-y: auto;
+      box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.15);
     }
 
     table {
       width: 100%;
-      border-collapse: collapse;
+      border-collapse: separate;
+      border-spacing: 0;
       text-align: right;
       font-size: 12.5px;
     }
 
     th, td {
-      padding: 12px 16px;
-      border-bottom: 1px solid var(--border-color);
+      padding: 14px 18px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
     }
 
     th {
-      background: rgba(15, 23, 42, 0.7);
+      background: rgba(11, 19, 35, 0.85);
+      backdrop-filter: blur(10px);
       font-weight: bold;
-      color: var(--text-muted);
+      color: var(--accent-hover);
       font-size: 11.5px;
       position: sticky;
       top: 0;
       z-index: 1;
+      border-bottom: 1px solid var(--border-color);
     }
 
     tr:last-child td { border-bottom: none; }
-    tr:hover td { background: rgba(255, 255, 255, 0.02); }
+    tr:hover td { background: rgba(16, 185, 129, 0.04); }
 
     .empty-state {
       padding: 40px 20px;
@@ -443,13 +613,13 @@
     }
 
     .action-tag {
-      background: rgba(13, 148, 136, 0.12);
+      background: rgba(16, 185, 129, 0.12);
       color: var(--accent-hover);
       padding: 2px 8px;
       border-radius: 99px;
       font-size: 10.5px;
       font-weight: bold;
-      border: 1px solid rgba(13, 148, 136, 0.2);
+      border: 1px solid rgba(16, 185, 129, 0.2);
     }
 
     /* ═══════════════════════ طلبات الاستثناء ═══════════════════════ */
@@ -572,7 +742,7 @@
       padding: 0 20px;
     }
 
-    .sites-list {
+    .sites-list, .custom-list {
       max-height: 220px;
       overflow-y: auto;
       border: 1px solid var(--border-color);
@@ -580,7 +750,7 @@
       background: rgba(15, 23, 42, 0.5);
     }
 
-    .site-item {
+    .site-item, .custom-item {
       display: flex;
       justify-content: space-between;
       align-items: center;
@@ -590,9 +760,14 @@
       font-size: 13px;
       direction: ltr;
       text-align: left;
+      transition: all 0.2s ease;
     }
 
-    .site-item:last-child { border-bottom: none; }
+    .site-item:last-child, .custom-item:last-child { border-bottom: none; }
+
+    .site-item:hover, .custom-item:hover {
+      background: rgba(16, 185, 129, 0.05);
+    }
 
     /* ═══════════════════════ مفتاح التبديل (Toggle Switch) ═══════════════════════ */
     .toggle-switch {
@@ -1038,6 +1213,10 @@
   </style>
 </head>
 <body>
+  <!-- كرات الإضاءة المتوهجة التفاعلية في الخلفية -->
+  <div class="ambient-glow-orb orb-1"></div>
+  <div class="ambient-glow-orb orb-2"></div>
+
   <!-- زر تبديل اللغة العائم لشاشات الدخول -->
   <div id="auth-lang-container" style="position: fixed; top: 20px; left: 20px; z-index: 1000;">
     <button class="btn btn-secondary btn-sm lang-toggle-btn" style="width: auto; padding: 6px 14px;">English</button>
@@ -1150,6 +1329,8 @@
       <button class="tab-btn" data-tab="categories">🔒 القوائم المخصصة</button>
       <button class="tab-btn" data-tab="exceptions">✅ قائمة الاستثناءات</button>
       <button class="tab-btn" data-tab="settings">⚙ إعدادات الحماية</button>
+      <button class="tab-btn" data-tab="blur">🖼️ التصفية البصرية</button>
+      <button class="tab-btn" data-tab="cloud">☁️ التحكم السحابي</button>
       <button class="tab-btn" data-tab="dns">🌐 حصّن بيتك</button>
       <button class="tab-btn" data-tab="about">ℹ️ عن الأداة</button>
       <button class="tab-btn" data-tab="help">❓ دليل الاستخدام</button>
@@ -1157,6 +1338,49 @@
 
     <!-- ═══════════ التبويب 1: سجل المحاولات ═══════════ -->
     <div id="content-logs" class="tab-content active">
+      <!-- لوحة الإحصائيات البصرية الجذابة -->
+      <div class="stats-grid">
+        <!-- 1. حالة الحماية -->
+        <div class="stat-card">
+          <div class="stat-icon-wrapper pulse-animation" id="stats-shield-icon-wrapper">
+            <svg class="stat-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+          </div>
+          <div class="stat-info">
+            <span class="stat-label" id="label-stats-shield-status">حالة الحماية</span>
+            <span class="stat-value text-emerald" id="stats-shield-status">نشط ومحمي</span>
+          </div>
+        </div>
+        <!-- 2. محاولات الحظر اليوم -->
+        <div class="stat-card">
+          <div class="stat-icon-wrapper">
+            <svg class="stat-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M18.36 6.64a9 9 0 1 1-12.73 0M12 2v10"/></svg>
+          </div>
+          <div class="stat-info">
+            <span class="stat-label" id="label-stats-blocks-today">محاولات حظر اليوم</span>
+            <span class="stat-value" id="stats-blocks-today">0</span>
+          </div>
+        </div>
+        <!-- 3. ساعة الذروة -->
+        <div class="stat-card">
+          <div class="stat-icon-wrapper">
+            <svg class="stat-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+          </div>
+          <div class="stat-info">
+            <span class="stat-label" id="label-stats-peak-hour">ساعة الذروة اليوم</span>
+            <span class="stat-value" id="stats-peak-hour">لا يوجد</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- الرسم البياني التفاعلي للمحاولات المحجوبة -->
+      <div class="card" style="margin-top: 20px; margin-bottom: 20px;">
+        <h3 class="card-title">📈 معدل الحجب الأسبوعي</h3>
+        <p class="card-desc">توزيع محاولات الحظر البصري وحجب النطاقات المسجلة خلال الـ 7 أيام الماضية</p>
+        <div style="width: 100%; height: 180px; margin-top: 15px;">
+          <canvas id="analytics-chart" style="width: 100%; height: 100%;"></canvas>
+        </div>
+      </div>
+
       <div class="action-row">
         <div>
           <h3 class="section-title">آخر الزيارات المحجوبة</h3>
@@ -1220,8 +1444,14 @@
         <h3 class="card-title">القائمة البيضاء (المواقع المستثناة)</h3>
         <p class="card-desc">هذه المواقع لن يتم حجبها أبداً حتى لو تطابقت مع كلمات مفتاحية محظورة. مفيدة للمواقع التعليمية أو الطبية التي تحتوي كلمات قد تُحجب خطأً.</p>
 
-        <div style="display:flex; gap:8px; margin-bottom:14px;">
-          <input type="text" id="exception-input" class="form-input" placeholder="example.com" style="flex:1; text-align:left; direction:ltr;">
+        <div style="display:flex; gap:8px; margin-bottom:14px; flex-wrap: wrap;">
+          <input type="text" id="exception-input" class="form-input" placeholder="example.com" style="flex:2; min-width: 150px; text-align:left; direction:ltr;">
+          <select id="select-exception-duration" class="form-input" style="flex:1; min-width: 120px; text-align: right; direction: rtl; padding: 10px;">
+            <option value="permanent" selected>دائم (Permanent)</option>
+            <option value="30">30 دقيقة (30 Mins)</option>
+            <option value="120">ساعتان (2 Hours)</option>
+            <option value="1440">يوم واحد (1 Day)</option>
+          </select>
           <button id="btn-add-exception" class="btn btn-primary" style="width:auto; padding:0 24px;">إضافة</button>
         </div>
 
@@ -1351,6 +1581,165 @@
 
       <div class="alert-banner">
         ⚠️ <strong>ملاحظة تقنية:</strong> لا يتعارض DNS الراوتر النظيف مع عمل إضافة درع الفطرة على المتصفح؛ بل يعملان معاً كخطوط دفاعية متكاملة. الأول يحجب على مستوى إشارة الواي فاي لكل الأجهزة، والإضافة تحمي محلياً من التفاف الأطفال أو استخدام أدوات تخطي على المتصفح.
+      </div>
+    </div>
+
+    <!-- ═══════════ التبويب 8: التصفية البصرية (Visual Blur Filter) ═══════════ -->
+    <div id="content-blur" class="tab-content">
+      <div class="card">
+        <h3 class="card-title">🖼️ التصفية البصرية الذكية بالذكاء الاصطناعي</h3>
+        <p class="card-desc">يقوم هذا النظام بالتعرف التلقائي على الصور ومقاطع الفيديو الفاضحة وتضبيبها محلياً على جهازك قبل عرضها لحماية البصر وصيانة الفطرة.</p>
+
+        <!-- خيار تفعيل الميزة -->
+        <div class="setting-row">
+          <div class="setting-info">
+            <div class="setting-label">تفعيل حظر وتضبيب الصور (Image Blur)</div>
+            <div class="setting-desc">تحليل وتصفية الصور المعروضة في المتصفح باستخدام نموذج ذكاء اصطناعي محلي آمن</div>
+          </div>
+          <label class="toggle-switch">
+            <input type="checkbox" id="toggle-blur-enabled">
+            <span class="toggle-slider"></span>
+          </label>
+        </div>
+
+        <!-- حساسية التصفية البصرية -->
+        <div class="setting-row" style="flex-direction: column; align-items: flex-start; gap: 8px; margin-top: 15px;">
+          <div class="setting-info">
+            <div class="setting-label">حساسية التحليل والفرز:</div>
+            <div class="setting-desc">اختر مستوى حساسية النموذج في رصد الصور الفاضحة والمثيرة</div>
+          </div>
+          <select id="select-blur-sensitivity" class="form-input" style="width: 250px; text-align: right; direction: rtl; padding: 10px;">
+            <option value="strict">حظر صارم (Strict - أعلى حماية)</option>
+            <option value="standard" selected>حظر قياسي (Standard - متوازن)</option>
+            <option value="relaxed">حظر مرن (Relaxed - حظر الصور الصريحة فقط)</option>
+          </select>
+        </div>
+
+        <!-- درجة الحجب وقوة التضبيب -->
+        <div class="setting-row" style="flex-direction: column; align-items: flex-start; gap: 8px; margin-top: 15px;">
+          <div class="setting-info">
+            <div class="setting-label">قوة تضبيب الصور (Blur Radius): <span id="blur-radius-value" style="font-family:'Outfit'; font-weight:700; color:var(--accent-light);">30px</span></div>
+            <div class="setting-desc">تحكم بمدى وضوح أو غموض الصور المحجوبة (بين 10 و 60 بكسل)</div>
+          </div>
+          <div style="display:flex; align-items:center; gap:12px; width:100%;">
+            <input type="range" id="input-blur-radius" min="10" max="60" value="30" class="form-input" style="flex:1; padding:0; height:8px; cursor:pointer;">
+          </div>
+        </div>
+
+        <!-- فلتر الرمادي (Grayscale) -->
+        <div class="setting-row" style="margin-top: 15px;">
+          <div class="setting-info">
+            <div class="setting-label">تحويل الصور المحجوبة للأبيض والأسود (Grayscale)</div>
+            <div class="setting-desc">إزالة الألوان تماماً من الصور المشتبه بها لتقليل لفت الانتباه البصري للطفل</div>
+          </div>
+          <label class="toggle-switch">
+            <input type="checkbox" id="toggle-blur-grayscale" checked>
+            <span class="toggle-slider"></span>
+          </label>
+        </div>
+      </div>
+
+      <!-- إحصائيات التصفية البصرية -->
+      <div class="card" style="margin-top: 20px;">
+        <h3 class="card-title">📊 إحصائيات التصفية البصرية</h3>
+        <p class="card-desc">نشاط تحليل وتصفية الصور المكتشفة في الجلسة الحالية</p>
+        <div class="stats-grid">
+          <div class="stat-card">
+            <div class="stat-icon-wrapper">
+              <svg class="stat-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>
+            </div>
+            <div class="stat-info">
+              <span class="stat-label">إجمالي الصور المفحوصة</span>
+              <span class="stat-value" id="stats-blur-total">0</span>
+            </div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon-wrapper" style="color: var(--danger-color); background: rgba(239, 68, 68, 0.08);">
+              <svg class="stat-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+            </div>
+            <div class="stat-info">
+              <span class="stat-label">الصور المحجوبة والمضببة</span>
+              <span class="stat-value" style="color: var(--danger-color) !important;" id="stats-blur-blocked">0</span>
+            </div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon-wrapper" style="color: var(--accent); background: rgba(20, 184, 166, 0.08);">
+              <svg class="stat-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+            </div>
+            <div class="stat-info">
+              <span class="stat-label">مسترجع من الكاش (سريع)</span>
+              <span class="stat-value" id="stats-blur-cache">0</span>
+            </div>
+          </div>
+        </div>
+        <div style="display:flex; justify-content:flex-end; margin-top:14px;">
+          <button id="btn-reset-blur-stats" class="btn btn-secondary" style="width:auto; padding:6px 16px; font-size:13px;">📊 تصفير إحصائيات التصفية</button>
+        </div>
+      </div>
+
+      <!-- قائمة مواقع مستثناة من الحظر البصري -->
+      <div class="card" style="margin-top: 20px;">
+        <h3 class="card-title">✅ مواقع مستثناة من التصفية البصرية (القائمة البيضاء للصور)</h3>
+        <p class="card-desc">لن يتم حجب أو فحص الصور في المواقع المدرجة هنا (مثل مواقع العمل أو المدارس الموثوقة)</p>
+
+        <div style="display:flex; gap:8px; margin-bottom:14px;">
+          <input type="text" id="blur-whitelist-input" class="form-input" placeholder="example.com" style="flex:1; text-align:left; direction:ltr;">
+          <button id="btn-add-blur-whitelist" class="btn btn-primary" style="width:auto; padding:0 24px;">إضافة</button>
+        </div>
+
+        <div class="exceptions-list" id="blur-whitelist-container"></div>
+        <div id="blur-whitelist-empty" class="empty-state" style="display:none; padding:20px;">
+          لم تقم بإضافة أي استثناءات للتصفية البصرية بعد.
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══════════ التبويب 9: التحكم السحابي والموافقة عن بعد ═══════════ -->
+    <div id="content-cloud" class="tab-content">
+      <div class="card">
+        <h3 class="card-title">☁️ التحكم السحابي والموافقة عن بعد</h3>
+        <p class="card-desc">يسمح هذا النظام للطفل بإرسال طلبات فك الحظر السحابية للوالدين لتلقي إشعار فوري على تليجرام والموافقة بنقرة واحدة من أي مكان مجاناً.</p>
+
+        <!-- خيار تفعيل التحكم السحابي -->
+        <div class="setting-row">
+          <div class="setting-info">
+            <div class="setting-label">تفعيل نظام التحكم عن بعد (Remote Approval)</div>
+            <div class="setting-desc">السماح بإرسال طلبات الاستثناء إلى قاعدة بيانات Firebase وتليجرام الوالد</div>
+          </div>
+          <label class="toggle-switch">
+            <input type="checkbox" id="toggle-cloud-enabled">
+            <span class="toggle-slider"></span>
+          </label>
+        </div>
+
+        <!-- حقول إعدادات Firebase -->
+        <div class="form-group" style="margin-top: 20px;">
+          <label class="form-label" style="display:block; margin-bottom:6px; font-weight:700;">رابط قاعدة بيانات Firebase (Realtime Database URL):</label>
+          <input type="text" id="input-firebase-url" class="form-input" placeholder="https://your-project-default-rtdb.firebaseio.com" style="text-align:left; direction:ltr; width:100%;">
+        </div>
+
+        <!-- حقول إعدادات Telegram -->
+        <div class="form-group" style="margin-top: 15px;">
+          <label class="form-label" style="display:block; margin-bottom:6px; font-weight:700;">توكن بوت تليجرام (Telegram Bot Token):</label>
+          <input type="text" id="input-telegram-token" class="form-input" placeholder="123456789:ABCdefGh..." style="text-align:left; direction:ltr; width:100%;">
+        </div>
+
+        <div class="form-group" style="margin-top: 15px;">
+          <label class="form-label" style="display:block; margin-bottom:6px; font-weight:700;">معرف دردشة تليجرام للأب (Telegram Chat ID):</label>
+          <input type="text" id="input-telegram-chat-id" class="form-input" placeholder="6028358331" style="text-align:left; direction:ltr; width:100%;">
+        </div>
+
+        <!-- رمز الأمان السري للتحقق -->
+        <div class="form-group" style="margin-top: 15px;">
+          <label class="form-label" style="display:block; margin-bottom:6px; font-weight:700;">رمز الأمان السري للأب (Secret Verification Token):</label>
+          <input type="password" id="input-parent-secret" class="form-input" placeholder="أدخل رمز سري عشوائي لمنع الاختراق" style="width:100%;">
+        </div>
+
+        <!-- أزرار الإجراءات -->
+        <div style="display:flex; gap:12px; margin-top:24px;">
+          <button id="btn-save-cloud-config" class="btn btn-primary" style="flex:1;">حفظ الإعدادات السحابية 💾</button>
+          <button id="btn-test-cloud-config" class="btn btn-secondary" style="width:auto; padding:0 24px;">إرسال رسالة تجريبية 🧪</button>
+        </div>
       </div>
     </div>
 

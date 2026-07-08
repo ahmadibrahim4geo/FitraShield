@@ -1,0 +1,871 @@
+# 🛡️ تقرير الأداة الفنية — درع الفطرة (FitraShield Technical Report)
+
+هذا التقرير مخصص لتقديمه للخبير الفني لشرح هيكلية وعمل إضافة **درع الفطرة (FitraShield)** وكيفية حماية الأطفال والنشء أثناء تصفح الإنترنت بالاعتماد على الفرز الذكي والتصنيف المحلي بالذكاء الاصطناعي.
+
+---
+
+## 📋 1. نظرة عامة عن الأداة (Overview)
+**درع الفطرة** هي إضافة متصفح متطورة (Chrome Extension Manifest V3) تعمل كجدار حماية ذكي متعدد الطبقات لحماية الأطفال من المحتوى غير اللائق أو الإباحي على الإنترنت.
+تتميز الأداة بالعمل **المحلي والآمن بالكامل (100% Offline & Local)**، حيث لا يتم إرسال أي روابط أو صور أو بيانات إلى خوادم خارجية حفاظاً على الخصوصية الكاملة وسرعة الاستجابة.
+
+### 🛡️ قنوات الدفاع الرئيسية للأداة:
+1. **تصفية الروابط والمواقع (DNS & URL Filtering):** حجب المواقع الإباحية المعروفة والمدرجة في قائمة حجب ضخمة محلياً (`rules.json`).
+2. **تصفية البحث الآمن (SafeSearch):** فرض وضع البحث الآمن على محركات البحث الكبرى (Google, Bing, YouTube) لمنع ظهور أي محتوى غير لائق في نتائج البحث.
+3. **تصفية الكلمات المفتاحية الذكية (Keyword Interception):** فحص الروابط وعناوين الصفحات أثناء التحميل وحجبها تلقائياً إذا احتوت على كلمات محظورة، مع إتاحة طلب استثناء أبوّي مؤقت لفك الحجب.
+4. **التصفية البصرية بالذكاء الاصطناعي (AI Picture Blur):** تحليل الصور على صفحات الويب لحظياً وتضبيبها (Blur) تلقائياً بالاعتماد على نموذج ذكاء اصطناعي محلي خفيف الوزن.
+
+---
+
+## 🧱 2. الهيكلية التقنية (Technical Architecture)
+تعمل الإضافة بالاعتماد على معالجة متعددة الخيوط (Multi-threaded Processing) لضمان عدم تأثر أداء وسرعة المتصفح:
+- **Service Worker (`background.js`):** يدير حركة الشبكة، ويتحقق من قواعد الحجب، ويتحكم بفتح وثيقة Offscreen.
+- **Offscreen Document (`offscreen/`):** يوفر بيئة DOM خفيفة ومخفية لتفادي قيود الحماية CSP/CORS الصارمة للمواقع.
+- **Web Worker (`workers/`):** خيط معالجة منفصل يقوم بتشغيل نموذج الذكاء الاصطناعي للتصنيف وتفادي تجميد واجهة المتصفح.
+- **Content Scripts (`content/`):** يراقب ظهور الصور في الصفحات عبر `MutationObserver` ويطبق تضبيباً وقائياً حتى صدور نتيجة الفحص.
+- **Parent Dashboard (`options.html/js`):** لوحة تحكم محمية بكلمة مرور تتيح للآباء تعديل خيارات الحماية، ومتابعة سجل المحاولات برسومات بيانية، والموافقة على طلبات الاستثناء بمدد مؤقتة.
+
+---
+
+## 📂 3. الهيكل المصدري للأداة (Directory Structure)
+
+```text
+FitraShield/
+├── manifest.json              # ملف التعريف والصلاحيات للإضافة (Manifest V3)
+├── background.js              # الـ Service Worker الرئيسي (إدارة الشبكة وتوجيه المهام)
+├── blocked.html               # شاشة الحجب والتحذير المعروضة للطفل
+├── blocked.js                 # منطق التعامل مع شاشة الحجب وطلب الاستثناءات
+├── rules.json                 # قاعدة الحجب الدائمة للمواقع الإباحية
+├── rules_safesearch.json      # قواعد فرض البحث الآمن على محركات البحث
+├── options.html               # واجهة لوحة تحكم الوالدين (الإشراف الأبوي)
+├── options.js                 # منطق لوحة التحكم (الرسم البياني، إعدادات التضبيب، طلبات الاستثناء)
+├── content/
+│   ├── content.js             # سكربت الحقن الميداني لتأمين الصفحات فورياً
+│   ├── blur-engine.js         # محرك رصد وفحص وتضبيب الصور بالمتصفح
+│   ├── blur-overlay.css       # الأنماط والتأثيرات الضبابية والزجاجية للصور المحجوبة
+│   ├── custom-modal.js        # نافذة التحقق الأبوية (إدخال كلمة المرور)
+│   └── custom-modal.css       # تنسيق واجهة التحقق الأبوية
+├── offscreen/
+│   ├── offscreen.html         # حاوية الـ DOM المخفية
+│   └── offscreen.js           # وسيط تهيئة الـ Web Worker وتمرير البكسلات
+├── workers/
+│   └── ai-worker.js           # خيط المعالجة المستقل لتصنيف الصور بنموذج NSFWJS
+├── lib/
+│   ├── tf.min.js              # مكتبة TensorFlow.js المحلية
+│   └── nsfwjs.min.js          # مكتبة NSFWJS المحلية لتصنيف الصور
+└── model/
+    ├── model.json             # ملف البنية الهيكلية لنموذج الذكاء الاصطناعي (Quantized MobileNet)
+    └── group1-shard1of1       # ملف الأوزان الثنائية للنموذج
+```
+
+---
+
+## 💻 4. الكود المصدري للمكونات الرئيسية (Core Source Code)
+
+### 4.1 ملف التعريف [manifest.json](file:///r:/My%20Software/FitraShield/manifest.json)
+```json
+{
+  "manifest_version": 3,
+  "name": "درع الفطرة | FitraShield",
+  "version": "2.0.0",
+  "description": "إضافة ذكية ومحلية لحجب المواقع الإباحية وحماية الفطرة والإشراف الأبوي — تعمل محلياً 100% بدون سيرفرات خارجية.",
+  "icons": {
+    "16": "icons/shield-active-16.png",
+    "48": "icons/shield-active-48.png",
+    "128": "icons/shield-active-128.png"
+  },
+  "permissions": [
+    "declarativeNetRequest",
+    "declarativeNetRequestFeedback",
+    "storage",
+    "tabs",
+    "webNavigation",
+    "nativeMessaging",
+    "alarms",
+    "offscreen"
+  ],
+  "host_permissions": [
+    "<all_urls>"
+  ],
+  "background": {
+    "service_worker": "background.js"
+  },
+  "action": {
+    "default_popup": "popup.html",
+    "default_icon": {
+      "16": "icons/shield-active-16.png",
+      "48": "icons/shield-active-48.png",
+      "128": "icons/shield-active-128.png"
+    }
+  },
+  "options_page": "options.html",
+  "declarative_net_request": {
+    "rule_resources": [
+      {
+        "id": "ruleset_main",
+        "enabled": true,
+        "path": "rules.json"
+      },
+      {
+        "id": "ruleset_safesearch",
+        "enabled": true,
+        "path": "rules_safesearch.json"
+      }
+    ]
+  },
+  "content_scripts": [
+    {
+      "matches": ["http://*/*", "https://*/*"],
+      "js": [
+        "content/custom-modal.js",
+        "content/blur-engine.js",
+        "content/content.js"
+      ],
+      "css": [
+        "content/blur-overlay.css",
+        "content/custom-modal.css"
+      ],
+      "run_at": "document_start",
+      "all_frames": true
+    }
+  ],
+  "web_accessible_resources": [
+    {
+      "resources": [
+        "blocked.html", 
+        "icons/*", 
+        "lib/tf.min.js", 
+        "lib/nsfwjs.min.js", 
+        "model/model.json", 
+        "model/group1-shard1of1", 
+        "workers/ai-worker.js", 
+        "offscreen/*"
+      ],
+      "matches": ["<all_urls>"]
+    }
+  ],
+  "content_security_policy": {
+    "extension_pages": "script-src 'self' 'wasm-unsafe-eval'; object-src 'self'"
+  }
+}
+```
+
+---
+
+### 4.2 كود المعالجة الخلفي المطور [background.js](file:///r:/My%20Software/FitraShield/background.js)
+```javascript
+/**
+ * FitraShield - Service Worker
+ * المسؤول عن التحكم بالشبكة، حجب الصفحات، إدارة استثناءات الوالدين المؤقتة، وإرسال الصور للـ Offscreen
+ */
+
+const FALLBACK_KEYWORDS = ["porn", "adult", "sex", "naked", "xxx", "hentai", "pussy", "dick", "vagina", "إباحي", "جنس", "سكس", "مكشوف", "عاري"];
+const EXCLUDED_FROM_DYNAMIC_BLOCK = [
+  "google.com", "bing.com", "yahoo.com", "youtube.com", "duckduckgo.com",
+  "wikipedia.org", "github.com", "twitter.com", "x.com", "facebook.com", "instagram.com"
+];
+
+let globalBlurCache = new Map(); // كاش تسريع التصفية بالذاكرة لمنع تكرار تصنيف نفس الصورة
+
+// 1. فحص وفلترة الاستثناءات منتهية الصلاحية عند بدء تشغيل المتصفح أو فحص الروابط
+chrome.storage.local.get([
+  "systemKeywords", "blockedKeywords", "customCategories", "exceptionsList", "shieldActive", "exceptionsExpiries"
+], (data) => {
+  cleanExpiredExceptions(data);
+});
+
+function cleanExpiredExceptions(data) {
+  let exceptions = data.exceptionsList || [];
+  const expiries = data.exceptionsExpiries || {};
+  const now = Date.now();
+  let hasExpired = false;
+
+  exceptions = exceptions.filter(exDomain => {
+    const expiry = expiries[exDomain];
+    if (expiry && now > expiry) {
+      delete expiries[exDomain];
+      hasExpired = true;
+      return false;
+    }
+    return true;
+  });
+
+  if (hasExpired) {
+    chrome.storage.local.set({
+      exceptionsList: exceptions,
+      exceptionsExpiries: expiries
+    });
+  }
+}
+
+// 2. مراقبة طلبات الشبكة وحجب الصفحات التي تحتوي على كلمات دلالية محظورة
+chrome.webNavigation.onBeforeNavigate.addListener((details) => {
+  if (details.frameId !== 0) return; // الحجب للصفحة الرئيسية فقط
+
+  const url = details.url;
+  const tabId = details.tabId;
+
+  // تخطي روابط المتصفح الخاصة أو الإعدادات
+  if (url.startsWith("chrome://") || url.startsWith("chrome-extension://") || url.startsWith("about:")) {
+    return;
+  }
+
+  chrome.storage.local.get([
+    "systemKeywords", "blockedKeywords", "customCategories", "exceptionsList", "shieldActive", "exceptionsExpiries"
+  ], (data) => {
+    if (data.shieldActive === false) return;
+
+    // فلترة الاستثناءات المنتهية على الطاير
+    let exceptions = data.exceptionsList || [];
+    const expiries = data.exceptionsExpiries || {};
+    const now = Date.now();
+    let hasExpired = false;
+
+    exceptions = exceptions.filter(exDomain => {
+      const expiry = expiries[exDomain];
+      if (expiry && now > expiry) {
+        delete expiries[exDomain];
+        hasExpired = true;
+        return false;
+      }
+      return true;
+    });
+
+    if (hasExpired) {
+      chrome.storage.local.set({ exceptionsList: exceptions, exceptionsExpiries: expiries });
+    }
+
+    const domain = extractDomain(url);
+    // فحص قائمة الاستثناءات البيضاء النشطة
+    for (const exDomain of exceptions) {
+      if (exDomain && domain.includes(exDomain.toLowerCase().trim())) {
+        return; 
+      }
+    }
+
+    // فحص المحتوى والكلمات الدلالية المحظورة
+    let keywords = data.systemKeywords || FALLBACK_KEYWORDS;
+    if (data.blockedKeywords) {
+      keywords = [...new Set([...keywords, ...data.blockedKeywords])];
+    }
+
+    const normUrl = url.toLowerCase();
+    for (const word of keywords) {
+      if (word && word.length >= 2 && normUrl.includes(word.toLowerCase())) {
+        blockTab(tabId, url, "كلمة مفتاحية محظورة", word);
+        return;
+      }
+    }
+  });
+});
+
+function blockTab(tabId, originalUrl, reason, keyword) {
+  const blockUrl = chrome.runtime.getURL(`blocked.html?url=${encodeURIComponent(originalUrl)}&reason=${encodeURIComponent(reason)}&keyword=${encodeURIComponent(keyword)}`);
+  chrome.tabs.update(tabId, { url: blockUrl });
+}
+
+function extractDomain(url) {
+  try {
+    const parsed = new URL(url);
+    return parsed.hostname.replace("www.", "");
+  } catch (e) {
+    return "";
+  }
+}
+
+// 3. مستمع استقبال الرسائل والتواصل مع الـ Offscreen والـ Content Script
+chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
+  // طلب الحصول على إعدادات التضبيب
+  if (message.type === 'GET_BLUR_SETTINGS') {
+    chrome.storage.local.get(['blurEnabled', 'blurSensitivity', 'blurWhitelist', 'blurRadius', 'blurGrayscale'], (data) => {
+      sendResponse({
+        blurEnabled: data.blurEnabled ?? false,
+        blurSensitivity: data.blurSensitivity ?? 'standard',
+        blurWhitelist: data.blurWhitelist ?? [],
+        blurRadius: data.blurRadius ?? 30,
+        blurGrayscale: data.blurGrayscale ?? true
+      });
+    });
+    return true;
+  }
+
+  // تصنيف صورة محلية (ImageData)
+  if (message.type === 'CLASSIFY_LOCAL_IMAGE') {
+    const { imageData, imgURL, requestId } = message;
+    if (imgURL && globalBlurCache.has(imgURL)) {
+      sendClassificationResult(sender.tab?.id, requestId, imgURL, globalBlurCache.get(imgURL));
+      return;
+    }
+
+    ensureOffscreenDocument().then(() => {
+      chrome.runtime.sendMessage({ type: 'CLASSIFY_IN_OFFSCREEN', imageData, imgURL, requestId });
+    });
+  }
+
+  // تصنيف صورة خارجية (Cross-origin fetch)
+  if (message.type === 'CLASSIFY_CROSS_ORIGIN') {
+    const { imgURL, requestId } = message;
+    if (imgURL && globalBlurCache.has(imgURL)) {
+      sendClassificationResult(sender.tab?.id, requestId, imgURL, globalBlurCache.get(imgURL));
+      return;
+    }
+
+    fetch(imgURL)
+      .then(res => res.arrayBuffer())
+      .then(arrayBuffer => {
+        return ensureOffscreenDocument().then(() => {
+          chrome.runtime.sendMessage({ type: 'CLASSIFY_IN_OFFSCREEN', arrayBuffer, imgURL, requestId });
+        });
+      })
+      .catch(err => {
+        sendClassificationResult(sender.tab?.id, requestId, imgURL, 'BLOCK', 'Fetch failed: ' + err.message);
+      });
+  }
+
+  // استقبال النتائج من Offscreen وإرسالها للصفحة المفتوحة وتسجيلها
+  if (message.type === 'RESULT') {
+    const { requestId, imgURL, predictions, verdict, error } = message;
+
+    if (imgURL && verdict) {
+      if (!imgURL.startsWith('data:') || imgURL.length < 50000) {
+        globalBlurCache.set(imgURL, verdict);
+      }
+      if (verdict === 'BLOCK') {
+        logBlockedImage(imgURL);
+      }
+    }
+
+    chrome.tabs.query({}, (tabs) => {
+      tabs.forEach(tab => {
+        chrome.tabs.sendMessage(tab.id, { type: 'CLASSIFICATION_RESULT', requestId, imgURL, predictions, verdict, error }).catch(() => {});
+      });
+    });
+  }
+
+  // حفظ كاش التضبيب طوال الجلسة
+  if (message.type === 'SET_BLUR_CACHE') {
+    const { imgURL, verdict } = message;
+    if (imgURL && verdict && (!imgURL.startsWith('data:') || imgURL.length < 50000)) {
+      globalBlurCache.set(imgURL, verdict);
+    }
+  }
+
+  // تسجيل طلب استثناء من شاشة الحجب
+  if (message.action === "requestException") {
+    chrome.storage.local.get(["exceptionRequests"], (result) => {
+      let requests = result.exceptionRequests || [];
+      requests.push({ url: message.url, timestamp: Date.now() });
+      chrome.storage.local.set({ exceptionRequests: requests }, () => {
+        sendResponse({ success: true });
+      });
+    });
+    return true;
+  }
+});
+
+function sendClassificationResult(tabId, requestId, imgURL, verdict, error = null) {
+  if (tabId) {
+    chrome.tabs.sendMessage(tabId, { type: 'CLASSIFICATION_RESULT', requestId, imgURL, verdict, error }).catch(() => {});
+  }
+}
+
+// دالة تسجيل الصور المحجوبة بالذكاء الاصطناعي في سجل المراقبة الأبوية
+function logBlockedImage(imgURL) {
+  if (imgURL.startsWith('data:') && imgURL.length > 50000) return;
+
+  chrome.storage.local.get(["activityLog"], (result) => {
+    let logs = result.activityLog || [];
+    const now = new Date();
+
+    const recentDuplicate = logs.slice(-15).some(log => {
+      if (log.url !== imgURL) return false;
+      const logTime = log.timeObject ? new Date(log.timeObject) : new Date(log.timestamp);
+      return (now.getTime() - logTime.getTime()) < 15000;
+    });
+
+    if (recentDuplicate) return;
+
+    const timestampStr = now.toLocaleTimeString('ar-EG') + " " + now.toLocaleDateString('ar-EG');
+    logs.push({
+      timestamp: timestampStr,
+      timeObject: now.toISOString(),
+      url: imgURL,
+      reason: "تصفية بصرية (صورة فاضحة)",
+      keyword: "AI Classifier",
+      action: "تضبيب وحظر"
+    });
+
+    if (logs.length > 500) logs.shift();
+    chrome.storage.local.set({ activityLog: logs });
+  });
+}
+
+// مستند الـ Offscreen
+let offscreenCreating = null;
+async function ensureOffscreenDocument() {
+  const contexts = await chrome.runtime.getContexts({ contextTypes: ['OFFSCREEN_DOCUMENT'] });
+  if (contexts.length > 0) return;
+  if (offscreenCreating) { await offscreenCreating; return; }
+
+  offscreenCreating = chrome.offscreen.createDocument({
+    url: 'offscreen/offscreen.html',
+    reasons: ['DOM_PARSING'],
+    justification: 'Classifying images via tensorflow locally'
+  });
+  await offscreenCreating;
+  offscreenCreating = null;
+}
+```
+
+---
+
+### 4.3 محرك تضبيب الصور الميداني [blur-engine.js](file:///r:/My%20Software/FitraShield/content/blur-engine.js)
+```javascript
+/**
+ * FitraShield - Blur Engine
+ * المحرك الميداني المسؤول عن مراقبة صور الصفحة، تحجيمها وتضبيبها الوقائي، وطلب تصنيفها محلياً
+ */
+
+const FitraBlurEngine = (() => {
+  let settings = { enabled: false, sensitivity: 'standard', whitelist: [], blurRadius: 30, blurGrayscale: true };
+  let requestCounter = 0;
+  const pendingRequests = new Map(); 
+  const sessionCache = new Map();    
+  const MIN_IMAGE_SIZE = 40;         
+
+  let sharedCanvas = null;
+  let sharedCtx = null;
+
+  function getSharedContext() {
+    if (!sharedCanvas) {
+      sharedCanvas = document.createElement('canvas');
+      sharedCanvas.width = 224;
+      sharedCanvas.height = 224;
+      sharedCtx = sharedCanvas.getContext('2d', { willReadFrequently: true });
+    }
+    return sharedCtx;
+  }
+
+  const SENSITIVITY_THRESHOLDS = {
+    strict:   { Porn: 0.5, Hentai: 0.5, Sexy: 0.4 },
+    standard: { Porn: 0.7, Hentai: 0.7, Sexy: 0.95 },
+    relaxed:  { Porn: 0.85, Hentai: 0.85, Sexy: 0.99 }
+  };
+
+  // حقن وتحديث متغيرات CSS لقطر التضبيب والرمادي ديناميكياً
+  function applyBlurStyles() {
+    const radius = settings.blurRadius ?? 30;
+    const grayscale = settings.blurGrayscale ?? true;
+    document.documentElement.style.setProperty('--fs-blur-radius', `${radius}px`);
+    document.documentElement.style.setProperty('--fs-grayscale', grayscale ? '100%' : '0%');
+  }
+
+  function init(userSettings) {
+    settings = { ...settings, ...userSettings };
+    if (!settings.enabled) {
+      disableAllBlurs();
+      return;
+    }
+
+    applyBlurStyles();
+
+    const hostname = window.location.hostname.toLowerCase();
+    const isWhitelisted = settings.whitelist.some(domain => {
+      const d = domain.toLowerCase().trim ? domain.toLowerCase().trim() : domain.toLowerCase();
+      return hostname === d || hostname.endsWith('.' + d);
+    });
+
+    if (isWhitelisted) return;
+
+    chrome.runtime.onMessage.addListener(handleBackgroundMessage);
+    scanExistingImages();
+    startMutationObserver();
+  }
+
+  function handleBackgroundMessage(message) {
+    if (message.type === 'CLASSIFICATION_RESULT') {
+      const { requestId, imgURL, predictions, verdict } = message;
+      const imgElement = pendingRequests.get(requestId);
+      pendingRequests.delete(requestId);
+
+      if (!imgElement) return;
+
+      let finalVerdict = verdict;
+      if (!finalVerdict && predictions) {
+        finalVerdict = analyzeScores(predictions);
+      }
+
+      if (imgURL) {
+        sessionCache.set(imgURL, finalVerdict);
+        chrome.runtime.sendMessage({ type: 'SET_BLUR_CACHE', imgURL, verdict: finalVerdict });
+      }
+
+      if (finalVerdict === 'BLOCK') {
+        applyPermanentBlur(imgElement);
+      } else {
+        removePendingBlur(imgElement);
+      }
+    } else if (message.type === 'BLUR_SETTINGS_UPDATED') {
+      settings.enabled = message.settings.blurEnabled ?? false;
+      settings.sensitivity = message.settings.blurSensitivity ?? 'standard';
+      settings.whitelist = message.settings.blurWhitelist ?? [];
+      settings.blurRadius = message.settings.blurRadius ?? 30;
+      settings.blurGrayscale = message.settings.blurGrayscale ?? true;
+      
+      if (!settings.enabled) {
+        disableAllBlurs();
+      } else {
+        applyBlurStyles();
+        init(settings);
+      }
+    }
+  }
+
+  function analyzeScores(predictions) {
+    const sens = SENSITIVITY_THRESHOLDS[settings.sensitivity] || SENSITIVITY_THRESHOLDS.standard;
+    const scores = {};
+    predictions.forEach(p => scores[p.className] = p.probability);
+
+    if (scores.Porn > sens.Porn || scores.Hentai > sens.Hentai || scores.Sexy > sens.Sexy) {
+      return 'BLOCK';
+    }
+    return 'ALLOW';
+  }
+
+  function scanExistingImages() {
+    document.querySelectorAll('img').forEach(processImage);
+  }
+
+  let observer = null;
+  function startMutationObserver() {
+    if (observer) return;
+    observer = new MutationObserver((mutations) => {
+      mutations.forEach(mutation => {
+        mutation.addedNodes.forEach(node => {
+          if (node.nodeName === 'IMG') {
+            processImage(node);
+          } else if (node.querySelectorAll) {
+            node.querySelectorAll('img').forEach(processImage);
+          }
+        });
+      });
+    });
+    observer.observe(document.body, { childList: true, subtree: true });
+  }
+
+  function processImage(img) {
+    if (img.dataset.fsStatus) return; // تم فحصها بالفعل أو جاري معالجتها
+    if (img.width < MIN_IMAGE_SIZE || img.height < MIN_IMAGE_SIZE) return;
+
+    const url = img.src || img.currentSrc;
+    if (!url) return;
+
+    // فحص الكاش الخاص بالجلسة
+    if (sessionCache.has(url)) {
+      const cached = sessionCache.get(url);
+      if (cached === 'BLOCK') {
+        applyPermanentBlur(img);
+      } else {
+        img.dataset.fsStatus = 'safe';
+      }
+      return;
+    }
+
+    // تضبيب وقائي فوري
+    img.dataset.fsStatus = 'pending';
+
+    // فك ترميز بكسلات الصورة وإرسالها للتصنيف
+    const requestId = ++requestCounter;
+    pendingRequests.set(requestId, img);
+
+    try {
+      if (isLocalOrDataUrl(url)) {
+        extractImageDataLocal(img, (imageData) => {
+          if (imageData) {
+            chrome.runtime.sendMessage({ type: 'CLASSIFY_LOCAL_IMAGE', imageData, imgURL: url, requestId });
+          } else {
+            removePendingBlur(img);
+          }
+        });
+      } else {
+        chrome.runtime.sendMessage({ type: 'CLASSIFY_CROSS_ORIGIN', imgURL: url, requestId });
+      }
+    } catch (e) {
+      removePendingBlur(img);
+    }
+  }
+
+  function extractImageDataLocal(img, callback) {
+    if (img.complete && img.naturalWidth) {
+      extract();
+    } else {
+      img.addEventListener('load', extract);
+      img.addEventListener('error', () => callback(null));
+    }
+
+    function extract() {
+      try {
+        const ctx = getSharedContext();
+        ctx.clearRect(0, 0, 224, 224);
+        ctx.drawImage(img, 0, 0, 224, 224);
+        const data = ctx.getImageData(0, 0, 224, 224);
+        callback(data);
+      } catch (err) {
+        callback(null);
+      }
+    }
+  }
+
+  function applyPermanentBlur(img) {
+    img.dataset.fsStatus = 'blocked';
+    
+    // منع الطفل من سحب الصورة أو النقر عليها
+    img.style.pointerEvents = 'none';
+
+    // تغليف الصورة بـ Wrapper لحمايتها وحقن القفل
+    if (img.parentNode && !img.parentNode.classList.contains('fs-img-wrapper')) {
+      const wrapper = document.createElement('div');
+      wrapper.className = 'fs-img-wrapper';
+      img.parentNode.insertBefore(wrapper, img);
+      wrapper.appendChild(img);
+
+      // حقن شاشة القفل التفاعلية
+      const overlay = document.createElement('div');
+      overlay.className = 'fs-blur-overlay';
+      overlay.innerHTML = `<img class="fs-lock-icon" src="${chrome.runtime.getURL('icons/lock.png')}">`;
+      
+      // فتح خيار التحقق من كلمة مرور الوالدين لفك تضبيب الصورة مؤقتاً
+      overlay.addEventListener('click', (e) => {
+        e.stopPropagation();
+        e.preventDefault();
+        FitraModal.show((passwordVerified) => {
+          if (passwordVerified) {
+            removePermanentBlur(img);
+          }
+        });
+      });
+
+      wrapper.appendChild(overlay);
+    }
+  }
+
+  function removePermanentBlur(img) {
+    img.dataset.fsStatus = 'safe';
+    img.style.pointerEvents = 'auto';
+    const wrapper = img.parentNode;
+    if (wrapper && wrapper.classList.contains('fs-img-wrapper')) {
+      wrapper.querySelector('.fs-blur-overlay')?.remove();
+      wrapper.replaceWith(img);
+    }
+  }
+
+  function removePendingBlur(img) {
+    img.dataset.fsStatus = 'safe';
+  }
+
+  function disableAllBlurs() {
+    document.querySelectorAll('img[data-fs-status]').forEach(img => {
+      removePermanentBlur(img);
+      img.removeAttribute('data-fs-status');
+    });
+    if (observer) {
+      observer.disconnect();
+      observer = null;
+    }
+  }
+
+  function isLocalOrDataUrl(url) {
+    return url.startsWith('data:') || url.startsWith('blob:') || url.startsWith('chrome-extension://') || url.includes(window.location.hostname);
+  }
+
+  return { init };
+})();
+```
+
+---
+
+### 4.4 خيط معالجة الذكاء الاصطناعي الخلفي [ai-worker.js](file:///r:/My%20Software/FitraShield/workers/ai-worker.js)
+```javascript
+/**
+ * FitraShield - AI Worker
+ * خيط الويب المستقل لشحن وتصنيف الصورة لتجنب حجز المتصفح الرئيسي
+ */
+
+importScripts(
+  chrome.runtime.getURL('lib/tf.min.js'),
+  chrome.runtime.getURL('lib/nsfwjs.min.js')
+);
+
+let model = null;
+let modelLoading = false;
+
+async function ensureModelLoaded() {
+  if (model) return true;
+  if (modelLoading) {
+    await new Promise(resolve => {
+      const check = setInterval(() => {
+        if (model) { clearInterval(check); resolve(); }
+      }, 100);
+    });
+    return true;
+  }
+
+  modelLoading = true;
+  try {
+    const modelURL = chrome.runtime.getURL('model/model.json');
+    model = await nsfwjs.load(modelURL, { size: 224 });
+    modelLoading = false;
+    self.postMessage({ type: 'MODEL_READY' });
+    return true;
+  } catch (err) {
+    modelLoading = false;
+    self.postMessage({ type: 'MODEL_ERROR', error: err.message });
+    return false;
+  }
+}
+
+self.onmessage = async (event) => {
+  const { type, imageData, imgURL, requestId } = event.data;
+
+  if (type === 'CLASSIFY') {
+    const ready = await ensureModelLoaded();
+    if (!ready) {
+      self.postMessage({ type: 'RESULT', requestId, imgURL, verdict: 'ALLOW', error: 'MODEL_NOT_LOADED' });
+      return;
+    }
+
+    try {
+      const imageTensor = tf.browser.fromPixels(imageData);
+      const resized = tf.image.resizeBilinear(imageTensor, [224, 224]);
+      const predictions = await model.classify(resized);
+
+      imageTensor.dispose();
+      resized.dispose();
+
+      self.postMessage({ type: 'RESULT', requestId, imgURL, predictions, verdict: null });
+    } catch (err) {
+      self.postMessage({ type: 'RESULT', requestId, imgURL, verdict: 'BLOCK', error: err.message });
+    }
+  }
+};
+```
+
+---
+
+### 4.5 وسيط الـ DOM للـ Web Workers والـ Extension في [offscreen.js](file:///r:/My%20Software/FitraShield/offscreen/offscreen.js)
+```javascript
+/**
+ * FitraShield - Offscreen Controller
+ * معالجة قيود الـ CORS والـ CSP وجلب بكسلات الصور وعمل التحجيم
+ */
+
+let worker = null;
+
+function initWorker() {
+  if (worker) return;
+  worker = new Worker(chrome.runtime.getURL('workers/ai-worker.js'));
+  worker.onmessage = (event) => chrome.runtime.sendMessage(event.data);
+  worker.onerror = (err) => console.error("Worker error: ", err);
+}
+
+chrome.runtime.onMessage.addListener((message) => {
+  if (message.type === 'CLASSIFY_IN_OFFSCREEN') {
+    initWorker();
+    const { arrayBuffer, imageData, imgURL, requestId } = message;
+
+    if (imageData) {
+      worker.postMessage({ type: 'CLASSIFY', imageData, imgURL, requestId });
+      return;
+    }
+
+    if (arrayBuffer) {
+      const blob = new Blob([arrayBuffer]);
+      const url = URL.createObjectURL(blob);
+      const img = new Image();
+
+      img.onload = () => {
+        try {
+          const canvas = document.createElement('canvas');
+          canvas.width = 224;
+          canvas.height = 224;
+          const ctx = canvas.getContext('2d');
+          ctx.drawImage(img, 0, 0, 224, 224);
+
+          const extractedImageData = ctx.getImageData(0, 0, 224, 224);
+          worker.postMessage({ type: 'CLASSIFY', imageData: extractedImageData, imgURL, requestId });
+        } catch (err) {
+          chrome.runtime.sendMessage({ type: 'RESULT', requestId, imgURL, verdict: 'BLOCK', error: err.message });
+        } finally {
+          URL.revokeObjectURL(url);
+        }
+      };
+
+      img.onerror = () => {
+        chrome.runtime.sendMessage({ type: 'RESULT', requestId, imgURL, verdict: 'BLOCK', error: 'Image parsing error' });
+        URL.revokeObjectURL(url);
+      };
+      img.src = url;
+    }
+  }
+});
+```
+
+---
+
+### 4.6 منطق التعامل مع شاشة الحجب المحدثة [blocked.js](file:///r:/My%20Software/FitraShield/blocked.js)
+```javascript
+/**
+ * FitraShield - Blocked Page Event Handler
+ * يدير إدخال طلب الاستثناء ومحاذاة شاشة التحذير للطفل
+ */
+
+document.addEventListener('DOMContentLoaded', () => {
+  const params = new URLSearchParams(window.location.search);
+  const originalUrl = params.get('url') || 'موقع غير معروف';
+  const reason = params.get('reason') || 'تطابق كلمة دلالية محظورة';
+  const keyword = params.get('keyword') || '';
+
+  const urlEl = document.getElementById('blocked-url');
+  const reasonEl = document.getElementById('blocked-reason');
+  
+  if (urlEl) urlEl.textContent = originalUrl;
+  if (reasonEl) reasonEl.textContent = reason;
+
+  if (keyword && keyword.trim() !== '') {
+    const keywordItem = document.getElementById('keyword-item');
+    const keywordBadge = document.getElementById('blocked-keyword');
+    if (keywordItem) keywordItem.style.display = '';
+    if (keywordBadge) keywordBadge.textContent = keyword;
+  }
+
+  const btnBack = document.getElementById('btn-back');
+  if (btnBack) {
+    btnBack.addEventListener('click', () => {
+      window.location.href = 'https://www.google.com';
+    });
+  }
+
+  const btnException = document.getElementById('btn-exception');
+  const confirmationMsg = document.getElementById('confirmation-msg');
+
+  if (btnException) {
+    btnException.addEventListener('click', () => {
+      if (btnException.disabled) return;
+      chrome.runtime.sendMessage({ action: "requestException", url: originalUrl }, (response) => {
+        if (response && response.success) {
+          if (confirmationMsg) confirmationMsg.classList.add('visible');
+          btnException.disabled = true;
+          btnException.innerHTML = '<span>✅</span><span>تم إرسال طلب فك الحجب</span>';
+        }
+      });
+    });
+  }
+});
+```
+
+---
+
+## 📈 5. لوحة التحكم المتقدمة والمراقبة (Dashboard Logic Details)
+يقوم ملف [options.js](file:///r:/My%20Software/FitraShield/options.js) بإدارة المنطق الرسومي والتحكم الإشرافي للوالدين:
+1. **الرسم البياني للتنبيهات الأسبوعية:** عبر دالة `drawAnalyticsChart()` التي تسحب السجلات التاريخية لآخر 7 أيام، وتقوم بتجميع عدد محاولات الحجب اليومية ورسمها بالخط والـ Gradient على لوحة Canvas متطورة تدعم الشاشات عالية الدقة.
+2. **المعاينات الآمنة للصور الفاضحة:** عند جلب سجل تصفية الصور، يتم إدراج مصغر بكسلي للصورة مشوه بـ `blur(6px) grayscale(100%)` لمنع رؤية الصورة الفاضحة، مع إمكانية تحويم الماوس (Hover) كـ `mouseenter` مؤقت لكشف التصفية للأب فقط بغرض التحقق.
+3. **تطبيق الاستثناءات بالعد التنازلي:** تخزن أوقات انتهاء الاستثناءات في كائن `exceptionsExpiries` كأختام زمنية. وعند فتح قائمة الاستثناءات، تُحسب الدقائق المتبقية بالمعادلة `Math.ceil((expiry - Date.now()) / 60000)` وتُعرض في اللوحة لحظياً، مع مسحها دورياً في الخلفية.

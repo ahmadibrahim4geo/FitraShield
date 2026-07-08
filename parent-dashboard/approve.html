@@ -1,0 +1,353 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="utf-8">
+  <title>درع الفطرة — الموافقة السحابية</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&family=Outfit:wght@400;600;800&display=swap" rel="stylesheet">
+
+  <style>
+    :root {
+      --bg-gradient: linear-gradient(135deg, #0f172a 0%, #022c22 100%);
+      --accent: #0d9488;
+      --accent-hover: #14b8a6;
+      --accent-light: #2dd4bf;
+      --accent-glow: rgba(13, 148, 136, 0.3);
+      --danger-color: #f87171;
+      --danger-glow: rgba(239, 68, 68, 0.2);
+      --text-main: #f8fafc;
+      --text-muted: #94a3b8;
+      --card-bg: rgba(30, 41, 59, 0.7);
+      --card-border: rgba(255, 255, 255, 0.08);
+      --input-bg: rgba(15, 23, 42, 0.6);
+    }
+
+    *, *::before, *::after {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Cairo', 'Outfit', sans-serif;
+      background: var(--bg-gradient);
+      background-attachment: fixed;
+      color: var(--text-main);
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 20px;
+    }
+
+    .card {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border-radius: 20px;
+      padding: 40px 30px;
+      max-width: 480px;
+      width: 100%;
+      box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+      text-align: center;
+      position: relative;
+    }
+
+    .logo {
+      font-size: 48px;
+      margin-bottom: 20px;
+      display: inline-block;
+      filter: drop-shadow(0 0 10px var(--accent-glow));
+    }
+
+    .title {
+      font-size: 22px;
+      font-weight: 700;
+      margin-bottom: 10px;
+      color: var(--text-main);
+    }
+
+    .subtitle {
+      font-size: 14px;
+      color: var(--text-muted);
+      margin-bottom: 30px;
+    }
+
+    .site-info {
+      background: var(--input-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 12px;
+      padding: 16px;
+      margin-bottom: 24px;
+      font-family: 'Outfit', 'Cairo', monospace;
+      font-size: 16px;
+      word-break: break-all;
+      color: var(--accent-light);
+    }
+
+    .form-group {
+      margin-bottom: 24px;
+      text-align: right;
+    }
+
+    .form-label {
+      display: block;
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--text-muted);
+      margin-bottom: 8px;
+    }
+
+    .select-input {
+      width: 100%;
+      padding: 12px;
+      background: var(--input-bg);
+      border: 2px solid var(--card-border);
+      border-radius: 8px;
+      color: var(--text-main);
+      font-size: 15px;
+      outline: none;
+      font-family: 'Cairo', sans-serif;
+      cursor: pointer;
+    }
+
+    .select-input:focus {
+      border-color: var(--accent);
+    }
+
+    .actions {
+      display: flex;
+      gap: 12px;
+    }
+
+    .btn {
+      flex: 1;
+      padding: 14px;
+      font-size: 15px;
+      font-weight: 700;
+      border: none;
+      border-radius: 10px;
+      cursor: pointer;
+      font-family: 'Cairo', sans-serif;
+      transition: all 0.2s ease;
+    }
+
+    .btn-approve {
+      background: var(--accent);
+      color: var(--text-main);
+      box-shadow: 0 4px 12px var(--accent-glow);
+    }
+
+    .btn-approve:hover {
+      background: var(--accent-hover);
+      box-shadow: 0 6px 16px rgba(20, 184, 166, 0.4);
+    }
+
+    .btn-reject {
+      background: rgba(239, 68, 68, 0.12);
+      color: var(--danger-color);
+      border: 1px solid rgba(239, 68, 68, 0.25);
+    }
+
+    .btn-reject:hover {
+      background: rgba(239, 68, 68, 0.2);
+      border-color: rgba(239, 68, 68, 0.4);
+    }
+
+    .status-msg {
+      display: none;
+      font-size: 16px;
+      font-weight: 700;
+      margin-top: 20px;
+      padding: 12px;
+      border-radius: 8px;
+      animation: fadeIn 0.3s ease;
+    }
+
+    .status-success {
+      background: rgba(20, 184, 166, 0.12);
+      color: var(--accent-light);
+      border: 1px solid rgba(20, 184, 166, 0.3);
+    }
+
+    .status-error {
+      background: rgba(239, 68, 68, 0.12);
+      color: var(--danger-color);
+      border: 1px solid rgba(239, 68, 68, 0.3);
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="card" id="main-card">
+    <span class="logo">🛡️</span>
+    <h1 class="title">طلب إلغاء حظر سحابي</h1>
+    <p class="subtitle" id="subtitle-text">جاري التحقق من تفاصيل الطلب...</p>
+
+    <div class="site-info" id="site-domain" style="display: none;">—</div>
+
+    <div id="approval-inputs" style="display: none;">
+      <div class="form-group">
+        <label class="form-label" for="exception-duration">مدة فك الحظر المطلوبة:</label>
+        <select class="select-input" id="exception-duration">
+          <option value="30">⏱️ 30 دقيقة (للدراسة/البحث)</option>
+          <option value="120">⏱️ ساعتان (أطول)</option>
+          <option value="1440">📅 يوم كامل (24 ساعة)</option>
+          <option value="permanent">🔐 فك حظر دائم (أضف للقائمة البيضاء)</option>
+        </select>
+      </div>
+
+      <div class="actions">
+        <button class="btn btn-reject" id="btn-reject">رفض الطلب</button>
+        <button class="btn btn-approve" id="btn-approve">موافقة وسماح</button>
+      </div>
+    </div>
+
+    <div class="status-msg" id="status-box"></div>
+  </div>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      const params = new URLSearchParams(window.location.search);
+      const dbUrl = params.get('db');
+      const requestId = params.get('id');
+      const token = params.get('token');
+      const domain = params.get('domain') || 'موقع غير معروف';
+
+      const subtitleText = document.getElementById('subtitle-text');
+      const siteDomain = document.getElementById('site-domain');
+      const approvalInputs = document.getElementById('approval-inputs');
+      const statusBox = document.getElementById('status-box');
+
+      const btnApprove = document.getElementById('btn-approve');
+      const btnReject = document.getElementById('btn-reject');
+      const selectDuration = document.getElementById('exception-duration');
+
+      if (!dbUrl || !requestId || !token) {
+        showError('رابط الطلب غير مكتمل أو تالف. يرجى التأكد من الضغط على الرابط من تليجرام بشكل صحيح.');
+        return;
+      }
+
+      // تنظيف وضبط رابط قاعدة البيانات
+      let dbEndpoint = dbUrl.trim();
+      if (!dbEndpoint.startsWith('http')) {
+        dbEndpoint = 'https://' + dbEndpoint;
+      }
+      if (dbEndpoint.endsWith('/')) {
+        dbEndpoint = dbEndpoint.slice(0, -1);
+      }
+
+      const requestUrl = `${dbEndpoint}/requests/${requestId}.json`;
+
+      // 1. جلب تفاصيل الطلب من قاعدة البيانات للتحقق
+      fetch(requestUrl)
+        .then(res => res.json())
+        .then(data => {
+          if (!data) {
+            showError('الطلب غير موجود أو قديم جداً.');
+            return;
+          }
+
+          // التحقق من رمز الأمان لمنع الاختراق
+          if (data.token !== token) {
+            showError('رمز الأمان المرفق غير صالح. ليس لديك صلاحية الموافقة.');
+            return;
+          }
+
+          if (data.status !== 'pending') {
+            const statusLabel = data.status === 'approved' ? 'مقبول مسبقاً' : 'مرفوض مسبقاً';
+            showSuccess(`تم الفصل في هذا الطلب بالفعل كـ (${statusLabel}).`);
+            return;
+          }
+
+          // عرض التفاصيل وتفعيل المدخلات
+          subtitleText.textContent = 'الطفل يطلب استثناءً لزيارة الموقع التالي:';
+          siteDomain.textContent = data.domain || domain;
+          siteDomain.style.display = 'block';
+          approvalInputs.style.display = 'block';
+        })
+        .catch(err => {
+          showError(`فشل الاتصال بقاعدة البيانات: ${err.message}`);
+        });
+
+      // 2. معالجة نقرة الموافقة
+      btnApprove.addEventListener('click', () => {
+        setButtonsDisabled(true);
+        const duration = selectDuration.value;
+
+        fetch(requestUrl, {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            status: 'approved',
+            duration: duration
+          })
+        })
+        .then(res => {
+          if (!res.ok) throw new Error('PATCH request failed');
+          return res.json();
+        })
+        .then(() => {
+          showSuccess('تمت الموافقة بنجاح! سيتم إلغاء حظر الموقع تلقائياً على جهاز الطفل.');
+          approvalInputs.style.display = 'none';
+        })
+        .catch(err => {
+          showError(`فشل إرسال الموافقة: ${err.message}`);
+          setButtonsDisabled(false);
+        });
+      });
+
+      // 3. معالجة نقرة الرفض
+      btnReject.addEventListener('click', () => {
+        setButtonsDisabled(true);
+
+        fetch(requestUrl, {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            status: 'rejected'
+          })
+        })
+        .then(res => {
+          if (!res.ok) throw new Error('PATCH request failed');
+          return res.json();
+        })
+        .then(() => {
+          showError('تم رفض الطلب بنجاح. سيبقى الموقع محجوباً.');
+          approvalInputs.style.display = 'none';
+        })
+        .catch(err => {
+          showError(`فشل إرسال الرفض: ${err.message}`);
+          setButtonsDisabled(false);
+        });
+      });
+
+      function setButtonsDisabled(state) {
+        btnApprove.disabled = state;
+        btnReject.disabled = state;
+        selectDuration.disabled = state;
+      }
+
+      function showError(msg) {
+        statusBox.textContent = msg;
+        statusBox.className = 'status-msg status-error';
+        statusBox.style.display = 'block';
+      }
+
+      function showSuccess(msg) {
+        statusBox.textContent = msg;
+        statusBox.className = 'status-msg status-success';
+        statusBox.style.display = 'block';
+      }
+    });
+  </script>
+</body>
+</html>

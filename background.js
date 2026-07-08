@@ -25,6 +25,12 @@ const FALLBACK_KEYWORDS = [
 // متغير عام لتخزين الكلمات المحملة
 let loadedKeywords = [];
 
+// ضبط صلاحيات كاش الجلسة ليكون متاحاً للـ Content Script في الصفحات
+chrome.storage.session.setAccessLevel({ accessLevel: 'TRUSTED_AND_UNTRUSTED_CONTEXTS' }).catch(() => {});
+
+// كاش عام لمشاركة تصنيفات الصور بين كل علامات التبويب طوال الجلسة لتقليل الضغط على المعالج
+const globalBlurCache = new Map();
+
 // ═══════════════════════════════════════════════════════════════
 // نظام تسجيل أخطاء التطوير لحظياً لمراقبة عمل الإضافة
 // ═══════════════════════════════════════════════════════════════
@@ -46,7 +52,8 @@ chrome.runtime.onInstalled.addListener(() => {
   chrome.storage.local.get([
     "masterPassword", "blockedKeywords", "customCategories",
     "exceptionsList", "activityLog", "exceptionRequests",
-    "safesearchEnabled", "shieldActive"
+    "safesearchEnabled", "shieldActive", "cloudEnabled",
+    "firebaseUrl", "telegramToken", "telegramChatId", "parentSecret"
   ], (result) => {
     const defaults = {
       blockedKeywords: result.blockedKeywords || [],
@@ -57,6 +64,11 @@ chrome.runtime.onInstalled.addListener(() => {
       safesearchEnabled: result.safesearchEnabled !== undefined ? result.safesearchEnabled : true,
       shieldActive: result.shieldActive !== undefined ? result.shieldActive : true,
       masterPassword: result.masterPassword || "",
+      cloudEnabled: result.cloudEnabled !== undefined ? result.cloudEnabled : true,
+      firebaseUrl: result.firebaseUrl || "https://fitrashield-default-rtdb.firebaseio.com",
+      telegramToken: result.telegramToken || "8690198664:AAFPBYzq888giswCzRCr89rljwtahP8OHIk",
+      telegramChatId: result.telegramChatId || "6028358331",
+      parentSecret: result.parentSecret || "parentPass123",
       lastActive: Date.now()
     };
 
@@ -280,12 +292,35 @@ function checkAndBlockTab(tabId, url, title) {
   debugLog(`جاري فحص الرابط: ${url}`);
 
   chrome.storage.local.get([
-    "systemKeywords", "blockedKeywords", "customCategories", "exceptionsList", "shieldActive"
+    "systemKeywords", "blockedKeywords", "customCategories", "exceptionsList", "shieldActive", "exceptionsExpiries"
   ], (data) => {
     // إذا كان الدرع متوقفاً (بكلمة مرور)، لا يتم الفحص
     if (data.shieldActive === false) {
       debugLog("تم تخطي الفحص لأن الدرع معطل (shieldActive = false)");
       return;
+    }
+
+    let exceptions = data.exceptionsList || [];
+    const expiries = data.exceptionsExpiries || {};
+    const now = Date.now();
+    let hasExpired = false;
+
+    // فلترة وحذف الاستثناءات المؤقتة منتهية الصلاحية
+    exceptions = exceptions.filter(exDomain => {
+      const expiry = expiries[exDomain];
+      if (expiry && now > expiry) {
+        delete expiries[exDomain];
+        hasExpired = true;
+        return false;
+      }
+      return true;
+    });
+
+    if (hasExpired) {
+      chrome.storage.local.set({
+        exceptionsList: exceptions,
+        exceptionsExpiries: expiries
+      });
     }
 
     let keywords = data.systemKeywords && data.systemKeywords.length > 0 ? data.systemKeywords : loadedKeywords;
@@ -296,7 +331,6 @@ function checkAndBlockTab(tabId, url, title) {
       keywords = [...new Set([...keywords, ...data.blockedKeywords])];
     }
     const categories = data.customCategories || [];
-    const exceptions = data.exceptionsList || [];
     debugLog(`حالة الحماية: نشطة | الكلمات المفحوصة: ${keywords.length} | الاستثناءات: ${exceptions.length}`);
 
     const domain = extractDomain(url);
@@ -353,13 +387,29 @@ function checkAndBlockTab(tabId, url, title) {
 // ═══════════════════════════════════════════════════════════════
 // 10. إضافة دومين جديد للقواعد الديناميكية تلقائياً
 // ═══════════════════════════════════════════════════════════════
+const EXCLUDED_FROM_DYNAMIC_BLOCK = [
+  "google.com", "bing.com", "duckduckgo.com", "yahoo.com", "yandex.com", "ecosia.org",
+  "google.com.eg", "google.co.uk", "google.ae", "google.com.sa", "google.com.kw", "google.com.qa",
+  "google.com.bh", "google.com.om", "google.jo", "google.com.lb", "google.dz", "google.co.ma",
+  "google.tn", "google.com.ly", "google.iq",
+  "youtube.com", "wikipedia.org", "github.com", "twitter.com", "x.com", "facebook.com", "instagram.com"
+];
+
 function addDomainToDynamicRules(domain) {
+  const cleanDomain = domain.toLowerCase().trim();
+  const isExcluded = EXCLUDED_FROM_DYNAMIC_BLOCK.some(d => cleanDomain === d || cleanDomain.endsWith('.' + d));
+  
+  if (isExcluded) {
+    console.log(`[FitraShield] Excluded domain ${cleanDomain} from permanent dynamic block rules.`);
+    return;
+  }
+
   chrome.declarativeNetRequest.getDynamicRules((existingRules) => {
     // التحقق من عدم وجود قاعدة مكررة لهذا الدومين
     const alreadyExists = existingRules.some(rule => {
       return rule.condition && 
              rule.condition.requestDomains && 
-             rule.condition.requestDomains.includes(domain);
+             rule.condition.requestDomains.includes(cleanDomain);
     });
 
     if (alreadyExists) return;
@@ -375,13 +425,13 @@ function addDomainToDynamicRules(domain) {
         priority: 1,
         action: { type: "block" },
         condition: {
-          requestDomains: [domain],
+          requestDomains: [cleanDomain],
           resourceTypes: ["main_frame", "sub_frame"]
         }
       }]
     }, () => {
       if (!chrome.runtime.lastError) {
-        console.log(`🛡 تم إضافة ${domain} تلقائياً للحجب الديناميكي.`);
+        console.log(`🛡 تم إضافة ${cleanDomain} تلقائياً للحجب الديناميكي.`);
       }
     });
   });
@@ -562,6 +612,26 @@ chrome.storage.onChanged.addListener((changes, areaName) => {
       console.log("🔒 تم مزامنة حالة البحث الآمن (SafeSearch) بنجاح عند البدء.");
     });
   });
+
+  // تنظيف أي حظر غير مقصود لمحركات البحث أو المنصات الرئيسية من القواعد الديناميكية
+  chrome.declarativeNetRequest.getDynamicRules((rules) => {
+    const rulesToRemove = rules.filter(rule => {
+      if (rule.condition && rule.condition.requestDomains) {
+        return rule.condition.requestDomains.some(domain => {
+          return EXCLUDED_FROM_DYNAMIC_BLOCK.some(d => domain === d || domain.endsWith('.' + d));
+        });
+      }
+      return false;
+    }).map(rule => rule.id);
+
+    if (rulesToRemove.length > 0) {
+      chrome.declarativeNetRequest.updateDynamicRules({
+        removeRuleIds: rulesToRemove
+      }, () => {
+        console.log(`🧹 Cleaned up ${rulesToRemove.length} search engine block rule(s) from dynamic rules.`);
+      });
+    }
+  });
 })();
 
 // ═══════════════════════════════════════════════════════════════
@@ -569,22 +639,379 @@ chrome.storage.onChanged.addListener((changes, areaName) => {
 // ═══════════════════════════════════════════════════════════════
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   if (message.action === "requestException") {
-    chrome.storage.local.get(["exceptionRequests"], (result) => {
+    chrome.storage.local.get(["exceptionRequests", "cloudEnabled", "firebaseUrl", "telegramToken", "telegramChatId", "parentSecret"], (result) => {
+      const cloudEnabled = result.cloudEnabled ?? false;
+      const firebaseUrl = result.firebaseUrl || "";
+      const telegramToken = result.telegramToken || "";
+      const telegramChatId = result.telegramChatId || "";
+      const parentSecret = result.parentSecret || "";
+
       let requests = result.exceptionRequests || [];
       const exists = requests.some(r => r.url === message.url);
+      
+      // استخراج الدومين من الرابط
+      let hostname = "unknown";
+      try {
+        hostname = new URL(message.url).hostname;
+      } catch (e) {
+        hostname = message.url;
+      }
+
       if (!exists) {
         requests.push({
           url: message.url,
+          domain: hostname,
           timestamp: new Date().toISOString()
         });
-        chrome.storage.local.set({ exceptionRequests: requests }, () => {
-          sendResponse({ success: true });
+        chrome.storage.local.set({ exceptionRequests: requests });
+      }
+
+      if (cloudEnabled && firebaseUrl && telegramToken && telegramChatId) {
+        // توليد معرف فريد عشوائي للطلب
+        const requestId = Math.random().toString(36).substring(2, 15) + Date.now().toString(36);
+        
+        let cleanUrl = firebaseUrl.trim();
+        if (!cleanUrl.startsWith("http")) {
+          cleanUrl = "https://" + cleanUrl;
+        }
+        if (cleanUrl.endsWith("/")) {
+          cleanUrl = cleanUrl.slice(0, -1);
+        }
+
+        const dbUrl = `${cleanUrl}/requests/${requestId}.json`;
+        const requestData = {
+          url: message.url,
+          domain: hostname,
+          status: "pending",
+          timestamp: new Date().toISOString(),
+          token: parentSecret
+        };
+
+        // 1. حفظ الطلب في Firebase
+        fetch(dbUrl, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(requestData)
+        })
+        .then(() => {
+          // 2. إرسال الرسالة إلى تليجرام الأب
+          const approvalUrl = `https://ahmadibrahim4geo.github.io/FitraShield/parent-dashboard/approve.html?db=${encodeURIComponent(cleanUrl)}&id=${requestId}&token=${parentSecret}&domain=${encodeURIComponent(hostname)}`;
+          const messageText = `🛡️ *درع الفطرة: طلب استثناء جديد*\n\nالطفل يحاول زيارة موقع محجوب:\n🔗 \`${hostname}\`\n\nانقر للموافقة الفورية من هاتفك:\n👉 [اضغط هنا للموافقة والتحكم](${approvalUrl})`;
+
+          const telegramUrl = `https://api.telegram.org/bot${telegramToken}/sendMessage`;
+          return fetch(telegramUrl, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              chat_id: telegramChatId,
+              text: messageText,
+              parse_mode: "Markdown"
+            })
+          });
+        })
+        .then(res => res.json())
+        .then(tgResult => {
+          if (tgResult.ok) {
+            sendResponse({ success: true, cloud: true, requestId });
+            
+            // 3. بدء فحص حالة الطلب دورياً (Polling) كل 5 ثوانٍ
+            const tabId = sender.tab ? sender.tab.id : null;
+            const pollInterval = setInterval(() => {
+              fetch(dbUrl)
+                .then(res => res.json())
+                .then(data => {
+                  if (data && data.status === 'approved') {
+                    clearInterval(pollInterval);
+                    
+                    // فك الحظر محلياً وإضافة الدومين للاستثناءات
+                    chrome.storage.local.get(["exceptionsList", "exceptionsExpiries"], (storeData) => {
+                      let exceptions = storeData.exceptionsList || [];
+                      let expiries = storeData.exceptionsExpiries || {};
+
+                      if (!exceptions.includes(hostname)) {
+                        exceptions.push(hostname);
+                      }
+
+                      const duration = data.duration || '30';
+                      if (duration !== "permanent") {
+                        const mins = parseInt(duration) || 30;
+                        expiries[hostname] = Date.now() + (mins * 60 * 1000);
+                      } else {
+                        if (expiries[hostname]) delete expiries[hostname];
+                      }
+
+                      chrome.storage.local.set({
+                        exceptionsList: exceptions,
+                        exceptionsExpiries: expiries
+                      }, () => {
+                        // إعلام الإضافة بتحديث قائمة الاستثناءات فوراً
+                        chrome.runtime.sendMessage({ type: 'BLUR_SETTINGS_UPDATED' });
+                        // إعادة تحميل صفحة الطفل لفتح الموقع تلقائياً
+                        if (tabId) {
+                          chrome.tabs.update(tabId, { url: message.url }).catch(() => {});
+                        }
+                      });
+                    });
+                  } else if (data && data.status === 'rejected') {
+                    clearInterval(pollInterval);
+                    if (tabId) {
+                      chrome.tabs.sendMessage(tabId, { type: "CLOUD_REQUEST_REJECTED" }).catch(() => {});
+                    }
+                  }
+                })
+                .catch(err => console.error("Firebase status poll error: ", err));
+            }, 5000);
+
+            // تصفية وحماية الموارد: إيقاف الفحص تلقائياً بعد 15 دقيقة
+            setTimeout(() => clearInterval(pollInterval), 15 * 60 * 1000);
+          } else {
+            console.error("Telegram notify failed: ", tgResult.description);
+            sendResponse({ success: true, cloud: false });
+          }
+        })
+        .catch(err => {
+          console.error("Cloud exception request failed: ", err);
+          sendResponse({ success: true, cloud: false });
         });
       } else {
-        sendResponse({ success: true });
+        sendResponse({ success: true, cloud: false });
       }
     });
     return true; // Keep channel open for async response
   }
+
+  // --- ميزة التصفية البصرية الذكية ---
+  
+  // 1. طلب الحصول على الإعدادات
+  if (message.type === 'GET_BLUR_SETTINGS') {
+    chrome.storage.local.get(['blurEnabled', 'blurSensitivity', 'blurWhitelist', 'blurRadius', 'blurGrayscale'], (data) => {
+      sendResponse({
+        blurEnabled: data.blurEnabled ?? false,
+        blurSensitivity: data.blurSensitivity ?? 'standard',
+        blurWhitelist: data.blurWhitelist ?? [],
+        blurRadius: data.blurRadius ?? 30,
+        blurGrayscale: data.blurGrayscale ?? true
+      });
+    });
+    return true;
+  }
+
+  // 2. التحقق من كلمة مرور الوالدين بشكل آمن
+  if (message.type === 'VERIFY_PARENT_PASSWORD') {
+    chrome.storage.local.get(['masterPassword'], (data) => {
+      const verified = data.masterPassword === message.password;
+      sendResponse({ verified });
+    });
+    return true;
+  }
+
+  // 3. زيادة عدادات الإحصائيات البصرية
+  if (message.type === 'INCREMENT_STATS_TOTAL') {
+    chrome.storage.local.get(['blurStatsTotal'], (data) => {
+      const total = (data.blurStatsTotal || 0) + 1;
+      chrome.storage.local.set({ blurStatsTotal: total });
+    });
+  }
+
+  if (message.type === 'INCREMENT_STATS_BLOCKED') {
+    chrome.storage.local.get(['blurStatsBlocked'], (data) => {
+      const blocked = (data.blurStatsBlocked || 0) + 1;
+      chrome.storage.local.set({ blurStatsBlocked: blocked });
+    });
+  }
+
+  if (message.type === 'INCREMENT_STATS_CACHE') {
+    chrome.storage.local.get(['blurStatsCache'], (data) => {
+      const cacheHits = (data.blurStatsCache || 0) + 1;
+      chrome.storage.local.set({ blurStatsCache: cacheHits });
+    });
+  }
+
+  // 4. تصنيف صورة محلية (إرسال ImageData لـ Offscreen)
+  if (message.type === 'CLASSIFY_LOCAL_IMAGE') {
+    const { imageData, imgURL, requestId } = message;
+
+    // فحص الكاش العام أولاً لتسريع الاستجابة وتخفيف معالجة الصور
+    if (imgURL && globalBlurCache.has(imgURL)) {
+      const cachedVerdict = globalBlurCache.get(imgURL);
+      if (sender.tab && sender.tab.id) {
+        chrome.tabs.sendMessage(sender.tab.id, {
+          type: 'CLASSIFICATION_RESULT',
+          requestId,
+          imgURL,
+          verdict: cachedVerdict
+        }).catch(() => {});
+      }
+      return;
+    }
+
+    ensureOffscreenDocument().then(() => {
+      chrome.runtime.sendMessage({
+        type: 'CLASSIFY_IN_OFFSCREEN',
+        imageData,
+        imgURL,
+        requestId
+      });
+    }).catch(err => console.error("Offscreen activation error: ", err));
+  }
+
+  // 5. تصنيف صورة خارجية (جلب ArrayBuffer وتمريره لـ Offscreen لتفادي CORS)
+  if (message.type === 'CLASSIFY_CROSS_ORIGIN') {
+    const { imgURL, requestId } = message;
+
+    // فحص الكاش العام أولاً لتسريع الاستجابة وتخفيف معالجة الصور
+    if (imgURL && globalBlurCache.has(imgURL)) {
+      const cachedVerdict = globalBlurCache.get(imgURL);
+      if (sender.tab && sender.tab.id) {
+        chrome.tabs.sendMessage(sender.tab.id, {
+          type: 'CLASSIFICATION_RESULT',
+          requestId,
+          imgURL,
+          verdict: cachedVerdict
+        }).catch(() => {});
+      }
+      return;
+    }
+
+    fetch(imgURL)
+      .then(res => res.arrayBuffer())
+      .then(arrayBuffer => {
+        return ensureOffscreenDocument().then(() => {
+          chrome.runtime.sendMessage({
+            type: 'CLASSIFY_IN_OFFSCREEN',
+            arrayBuffer,
+            imgURL,
+            requestId
+          });
+        });
+      })
+      .catch(err => {
+        // في حال فشل الجلب الخارجي، نرسل رد حجب وقائي للـ content script
+        if (sender.tab && sender.tab.id) {
+          chrome.tabs.sendMessage(sender.tab.id, {
+            type: 'CLASSIFICATION_RESULT',
+            requestId,
+            imgURL,
+            verdict: 'BLOCK',
+            error: 'Fetch failed: ' + err.message
+          }).catch(() => {});
+        }
+      });
+  }
+
+  // 6. استقبال ردود التصنيف من الـ Offscreen وإعادة بثها لعلامة التبويب الأصلية
+  if (message.type === 'RESULT') {
+    const { requestId, imgURL, predictions, verdict, error } = message;
+
+    // حفظ النتيجة في الكاش العام
+    if (imgURL && verdict) {
+      if (!imgURL.startsWith('data:') || imgURL.length < 50000) {
+        globalBlurCache.set(imgURL, verdict);
+        if (globalBlurCache.size > 2000) {
+          const firstKey = globalBlurCache.keys().next().value;
+          globalBlurCache.delete(firstKey);
+        }
+      }
+
+      // إذا كانت النتيجة حظر، نسجلها في سجل النشاط العام للآباء لمعاينتها
+      if (verdict === 'BLOCK') {
+        logBlockedImage(imgURL);
+      }
+    }
+
+    chrome.tabs.query({}, (tabs) => {
+      tabs.forEach(tab => {
+        chrome.tabs.sendMessage(tab.id, {
+          type: 'CLASSIFICATION_RESULT',
+          requestId,
+          imgURL,
+          predictions,
+          verdict,
+          error
+        }).catch(() => {});
+      });
+    });
+  }
+
+  // 7. تحديث كاش التضبيب طوال الجلسة
+  if (message.type === 'SET_BLUR_CACHE') {
+    const { imgURL, verdict } = message;
+    if (imgURL && verdict) {
+      if (!imgURL.startsWith('data:') || imgURL.length < 50000) {
+        globalBlurCache.set(imgURL, verdict);
+        if (globalBlurCache.size > 2000) {
+          const firstKey = globalBlurCache.keys().next().value;
+          globalBlurCache.delete(firstKey);
+        }
+      }
+      
+      // تسجيل الصورة المحجوبة بالذكاء الاصطناعي في سجل النشاط العام للآباء لمعاينتها
+      if (verdict === 'BLOCK') {
+        logBlockedImage(imgURL);
+      }
+    }
+  }
 });
+
+// --- إدارة وثيقة الـ Offscreen Document ---
+let offscreenCreating = null;
+
+async function ensureOffscreenDocument() {
+  const offscreenUrl = 'offscreen/offscreen.html';
+  
+  // التحقق من وجود مستند Offscreen مفتوح بالفعل
+  const contexts = await chrome.runtime.getContexts({
+    contextTypes: ['OFFSCREEN_DOCUMENT']
+  });
+
+  if (contexts.length > 0) return;
+
+  if (offscreenCreating) {
+    await offscreenCreating;
+    return;
+  }
+
+  offscreenCreating = chrome.offscreen.createDocument({
+    url: offscreenUrl,
+    reasons: ['DOM_PARSING'],
+    justification: 'Classifying images via tensorflow locally'
+  });
+
+  await offscreenCreating;
+  offscreenCreating = null;
+}
+
+// دالة تسجيل الصور المحجوبة بالذكاء الاصطناعي في سجل النشاط العام للآباء
+function logBlockedImage(imgURL) {
+  // الحد من كاش الـ Base64 الكبيرة لتجنب انتفاخ السجل
+  if (imgURL.startsWith('data:') && imgURL.length > 50000) return;
+
+  chrome.storage.local.get(["activityLog"], (result) => {
+    let logs = result.activityLog || [];
+    const now = new Date();
+
+    // تجنب تسجيل نفس الرابط إذا تكرر في آخر 15 ثانية
+    const recentDuplicate = logs.slice(-15).some(log => {
+      if (log.url !== imgURL) return false;
+      const logTime = log.timeObject ? new Date(log.timeObject) : new Date(log.timestamp);
+      return (now.getTime() - logTime.getTime()) < 15000;
+    });
+
+    if (recentDuplicate) return;
+
+    // تنسيق التاريخ والوقت
+    const timestampStr = now.toLocaleTimeString('ar-EG') + " " + now.toLocaleDateString('ar-EG');
+    logs.push({
+      timestamp: timestampStr,
+      timeObject: now.toISOString(),
+      url: imgURL,
+      reason: "تصفية بصرية (صورة فاضحة)",
+      keyword: "AI Classifier",
+      action: "تضبيب وحظر"
+    });
+
+    if (logs.length > 500) logs.shift(); // حد أقصى 500 لوج
+    chrome.storage.local.set({ activityLog: logs });
+  });
+}
 

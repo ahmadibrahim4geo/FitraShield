@@ -65,12 +65,12 @@ def calculate_summary_and_rewrite(log_file, new_entry):
             try:
                 with open(log_file, mode='r', encoding='utf-8') as f:
                     lines = f.readlines()
-                    # تخطي أول سطرين (الملخص والرأس)
-                    if len(lines) > 2:
-                        reader = csv.reader(lines[2:])
-                        for row in reader:
-                            if row:
-                                rows.append(row)
+                    # تخطي أسطر الملخص والرأس بشكل مرن ومقاوم للتغيرات
+                    data_lines = [line for line in lines if not line.startswith("═══") and not line.startswith("[ملخص") and not line.startswith("الوقت والتاريخ")]
+                    reader = csv.reader(data_lines)
+                    for row in reader:
+                        if row:
+                            rows.append(row)
             except Exception:
                 pass
 
@@ -83,6 +83,10 @@ def calculate_summary_and_rewrite(log_file, new_entry):
             new_entry.get("action", "حجب وتحويل"),
             new_entry.get("shieldStatus", "نشط")
         ])
+
+        # حد أقصى 2000 سجل في الملف المحلي للحفاظ على سرعة الأداء
+        if len(rows) > 2000:
+            rows = rows[-2000:]
 
         # 3. حساب الإحصائيات لليوم الحالي
         from datetime import date
@@ -129,8 +133,24 @@ def calculate_summary_and_rewrite(log_file, new_entry):
             counter = Counter(today_hours)
             peak_hour = counter.most_common(1)[0][0]
 
-        # 4. بناء سطر الملخص وسطر الرأس
-        shield_status = new_entry.get# دالة لمراقبة العمليات وإغلاق المتصفحات غير المصرح بها لمنع الالتفاف
+        # 4. بناء سطر الملخص وسطر الرأس وكتابة البيانات في ملف التقرير
+        shield_status = new_entry.get("shieldStatus", "نشط")
+        summary_row = (
+            "══════════════════════════════════════════════════════════\n"
+            f"[ملخص درع الفطرة] | محاولات اليوم: {today_count} | وقت الذروة: {peak_hour} | الحصن: {shield_status} ✔\n"
+            "══════════════════════════════════════════════════════════\n"
+        )
+        
+        header_row = ["الوقت والتاريخ", "الموقع / البحث", "سبب الحجب", "الكلمة المستخدمة", "التصرف الفوري", "حالة الأداة"]
+        
+        try:
+            with open(log_file, mode='w', encoding='utf-8', newline='') as f:
+                f.write(summary_row)
+                writer = csv.writer(f)
+                writer.writerow(header_row)
+                writer.writerows(rows)
+        except Exception:
+            pass# دالة لمراقبة العمليات وإغلاق المتصفحات غير المصرح بها لمنع الالتفاف
 def monitor_processes(log_file):
     # ننتظر قليلاً حتى تستقر عملية التشغيل
     time.sleep(2)

@@ -77,6 +77,9 @@ const translations = {
     "#help-faq-2-label": "ماذا يحدث في حال نسيان كلمة مرور الوالدين؟",
     "#help-faq-2-desc": "يمكنك استخدام مفتاح الاسترداد الرئيسي الذي ظهر لك عند التثبيت لأول مرة، أو فتح ملف helper.py بصلاحيات المسؤول لإعادة تعيينها.",
     
+    "#label-stats-shield-status": "حالة الحماية",
+    "#label-stats-blocks-today": "محاولات حظر اليوم",
+    "#label-stats-peak-hour": "ساعة الذروة اليوم",
     "#content-logs .section-title": "آخر الزيارات المحجوبة",
     "#content-logs .section-desc": "محاولات الأطفال التي تم رصدها وحجبها تلقائياً",
     "#btn-refresh-logs": "تحديث 🔄",
@@ -134,7 +137,9 @@ const translations = {
     "#content-dns ol li:nth-child(4)": "ابحث عن خانات Primary DNS و Secondary DNS.",
     "#content-dns ol li:nth-child(5)": "أدخل العناوين النظيفة (مثلاً 1.1.1.3 و 1.0.0.3).",
     "#content-dns ol li:nth-child(6)": "احفظ الإعدادات وأعد تشغيل الراوتر لتعميم الحماية على كل أجهزة البيت.",
-    "#content-dns .alert-banner": "⚠️ ملاحظة تقنية: لا يتعارض DNS الراوتر النظيف مع عمل إضافة درع الفطرة على المتصفح؛ بل يعملان معاً كخطوط دفاعية متكاملة. الأول يحجب على مستوى إشارة الواي فاي لكل الأجهزة، والإضافة تحمي محلياً من التفاف الأطفال أو استخدام أدوات تخطي على المتصفح."
+    "#content-dns .alert-banner": "⚠️ ملاحظة تقنية: لا يتعارض DNS الراوتر النظيف مع عمل إضافة درع الفطرة على المتصفح؛ بل يعملان معاً كخطوط دفاعية متكاملة. الأول يحجب على مستوى إشارة الواي فاي لكل الأجهزة، والإضافة تحمي محلياً من التفاف الأطفال أو استخدام أدوات تخطي على المتصفح.",
+    "[data-tab=\"blur\"]": "🖼️ التصفية البصرية",
+    "[data-tab=\"cloud\"]": "☁️ التحكم السحابي"
   },
   en: {
     "#setup-screen .auth-title": "Setup FitraShield for the First Time",
@@ -211,6 +216,9 @@ const translations = {
     "#help-faq-2-label": "What happens if I forget the master password?",
     "#help-faq-2-desc": "You can use the Master Recovery Key shown during setup, or run helper.py as Administrator to reset it.",
     
+    "#label-stats-shield-status": "Protection Status",
+    "#label-stats-blocks-today": "Blocks Today",
+    "#label-stats-peak-hour": "Peak Hour Today",
     "#content-logs .section-title": "Recent Blocked Visits",
     "#content-logs .section-desc": "Monitored and blocked browsing attempts",
     "#btn-refresh-logs": "Refresh 🔄",
@@ -268,7 +276,9 @@ const translations = {
     "#content-dns ol li:nth-child(4)": "Find Primary DNS and Secondary DNS fields.",
     "#content-dns ol li:nth-child(5)": "Enter the clean addresses (e.g., 1.1.1.3 and 1.0.0.3).",
     "#content-dns ol li:nth-child(6)": "Save settings and restart router to apply protection to all home devices.",
-    "#content-dns .alert-banner": "⚠️ Technical Note: Clean Router DNS does not conflict with FitraShield; they work together as complementary lines of defense. The former blocks at the Wi-Fi level for all devices, while the extension protects locally against bypass tools."
+    "#content-dns .alert-banner": "⚠️ Technical Note: Clean Router DNS does not conflict with FitraShield; they work together as complementary lines of defense. The former blocks at the Wi-Fi level for all devices, while the extension protects locally against bypass tools.",
+    "[data-tab=\"blur\"]": "🖼️ Visual Protection",
+    "[data-tab=\"cloud\"]": "☁️ Cloud Control"
   }
 };
 
@@ -627,6 +637,10 @@ document.addEventListener("DOMContentLoaded", () => {
         loadExceptionsList();
       } else if (targetTab === "settings") {
         loadSettingsTab();
+      } else if (targetTab === "blur") {
+        loadBlurSettings();
+      } else if (targetTab === "cloud") {
+        loadCloudSettings();
       }
     });
   });
@@ -642,6 +656,7 @@ document.addEventListener("DOMContentLoaded", () => {
     loadCustomCategories();
     loadExceptionsList();
     loadSettingsTab();
+    loadCloudSettings();
   }
 
   // ═══════════════════════════════════════════════════════════════
@@ -652,23 +667,91 @@ document.addEventListener("DOMContentLoaded", () => {
     const tableHeader = document.querySelector("#logs-table thead tr");
     if (tableHeader) {
       tableHeader.innerHTML = currentLang === "en" ? `
-        <th style="width:20%">Date</th>
-        <th style="width:30%">Website</th>
-        <th style="width:18%">Reason</th>
-        <th style="width:17%">Keyword</th>
-        <th style="width:15%">Action</th>
+        <th style="width:15%">Date</th>
+        <th style="width:35%">Website</th>
+        <th style="width:15%">Reason</th>
+        <th style="width:15%">Keyword</th>
+        <th style="width:10%">Preview</th>
+        <th style="width:10%">Action</th>
       ` : `
-        <th style="width:20%">التاريخ</th>
-        <th style="width:30%">الموقع</th>
-        <th style="width:18%">سبب الحجب</th>
-        <th style="width:17%">الكلمة المرصودة</th>
-        <th style="width:15%">التصرف</th>
+        <th style="width:15%">التاريخ</th>
+        <th style="width:35%">الموقع</th>
+        <th style="width:15%">سبب الحجب</th>
+        <th style="width:15%">الكلمة المرصودة</th>
+        <th style="width:10%">معاينة</th>
+        <th style="width:10%">التصرف</th>
       `;
     }
-    chrome.storage.local.get(["activityLog"], (result) => {
+    chrome.storage.local.get(["activityLog", "shieldActive"], (result) => {
       const logs = result.activityLog || [];
+      const shieldActive = result.shieldActive !== false;
       const tbody = document.getElementById("logs-tbody");
       const emptyDiv = document.getElementById("logs-empty");
+
+      // 1. تحديث بطاقة حالة الحصن
+      const shieldStatusEl = document.getElementById("stats-shield-status");
+      const shieldIconWrapper = document.getElementById("stats-shield-icon-wrapper");
+      if (shieldStatusEl) {
+        if (shieldActive) {
+          shieldStatusEl.textContent = currentLang === "en" ? "Active & Protected" : "نشط ومحمي";
+          shieldStatusEl.className = "stat-value text-emerald";
+          if (shieldIconWrapper) {
+            shieldIconWrapper.style.color = "var(--accent)";
+            shieldIconWrapper.style.background = "rgba(16, 185, 129, 0.08)";
+            shieldIconWrapper.classList.add("pulse-animation");
+          }
+        } else {
+          shieldStatusEl.textContent = currentLang === "en" ? "Paused" : "موقوف مؤقتاً";
+          shieldStatusEl.className = "stat-value text-paused";
+          if (shieldIconWrapper) {
+            shieldIconWrapper.style.color = "#64748b";
+            shieldIconWrapper.style.background = "rgba(100, 116, 139, 0.08)";
+            shieldIconWrapper.classList.remove("pulse-animation");
+          }
+        }
+      }
+
+      // 2. حساب إحصائيات اليوم الحالي وساعة الذروة
+      const todayStr = new Date().toDateString();
+      let todayCount = 0;
+      const todayHours = [];
+
+      logs.forEach(log => {
+        const logDate = log.timeObject ? new Date(log.timeObject) : new Date(log.timestamp);
+        if (logDate && !isNaN(logDate.getTime()) && logDate.toDateString() === todayStr) {
+          todayCount++;
+          const hour = logDate.getHours();
+          todayHours.push(hour);
+        }
+      });
+
+      let peakHourText = currentLang === "en" ? "None" : "لا يوجد";
+      if (todayHours.length > 0) {
+        const hourCounts = {};
+        let maxHour = todayHours[0];
+        let maxCount = 0;
+        todayHours.forEach(h => {
+          hourCounts[h] = (hourCounts[h] || 0) + 1;
+          if (hourCounts[h] > maxCount) {
+            maxCount = hourCounts[h];
+            maxHour = h;
+          }
+        });
+        
+        const ampm = maxHour >= 12 ? (currentLang === "en" ? "PM" : "م") : (currentLang === "en" ? "AM" : "ص");
+        const displayHour = maxHour % 12 === 0 ? 12 : maxHour % 12;
+        peakHourText = `${displayHour}:00 ${ampm}`;
+      }
+
+      const blocksTodayEl = document.getElementById("stats-blocks-today");
+      if (blocksTodayEl) {
+        blocksTodayEl.textContent = todayCount;
+      }
+      
+      const peakHourEl = document.getElementById("stats-peak-hour");
+      if (peakHourEl) {
+        peakHourEl.textContent = peakHourText;
+      }
 
       tbody.innerHTML = "";
 
@@ -702,6 +785,14 @@ document.addEventListener("DOMContentLoaded", () => {
         const spanReason = document.createElement("span");
         spanReason.className = "reason-tag";
         spanReason.textContent = log.reason;
+        
+        // تلوين وسم التصفية البصرية بلون مختلف لتمييزه
+        if (log.reason && log.reason.includes("تصفية")) {
+          spanReason.style.background = "rgba(13, 148, 136, 0.15)";
+          spanReason.style.color = "#2dd4bf";
+          spanReason.style.border = "1px solid rgba(13, 148, 136, 0.25)";
+        }
+        
         tdReason.appendChild(spanReason);
         tr.appendChild(tdReason);
 
@@ -722,12 +813,46 @@ document.addEventListener("DOMContentLoaded", () => {
         }
         tr.appendChild(tdKeyword);
 
+        // عمود المعاينة البصرية الجديدة
+        const tdPreview = document.createElement("td");
+        if (log.reason && log.reason.includes("تصفية") && log.url.startsWith("http")) {
+          const previewImg = document.createElement("img");
+          previewImg.src = log.url;
+          previewImg.style.width = "36px";
+          previewImg.style.height = "36px";
+          previewImg.style.borderRadius = "6px";
+          previewImg.style.objectFit = "cover";
+          previewImg.style.filter = "blur(6px) grayscale(100%)";
+          previewImg.style.transition = "all 0.3s ease";
+          previewImg.style.cursor = "zoom-in";
+          previewImg.title = currentLang === "en" ? "Hover to reveal preview" : "مرر الفأرة للمعاينة";
+          
+          previewImg.addEventListener("mouseenter", () => {
+            previewImg.style.filter = "none";
+            previewImg.style.transform = "scale(1.5)";
+            previewImg.style.zIndex = "10";
+          });
+          previewImg.addEventListener("mouseleave", () => {
+            previewImg.style.filter = "blur(6px) grayscale(100%)";
+            previewImg.style.transform = "none";
+            previewImg.style.zIndex = "auto";
+          });
+          
+          tdPreview.appendChild(previewImg);
+        } else {
+          tdPreview.textContent = "—";
+        }
+        tr.appendChild(tdPreview);
+
         const tdAction = document.createElement("td");
         tdAction.textContent = log.action || "حجب وتحويل";
         tr.appendChild(tdAction);
 
         tbody.appendChild(tr);
       }
+      
+      // رسم المخطط البياني التفاعلي فور تحميل السجلات
+      drawAnalyticsChart();
     });
   }
 
@@ -763,13 +888,26 @@ document.addEventListener("DOMContentLoaded", () => {
 
         const actions = document.createElement("div");
         actions.style.display = "flex";
+        actions.style.alignItems = "center";
         actions.style.gap = "8px";
+
+        const durationSelect = document.createElement("select");
+        durationSelect.className = "form-input";
+        durationSelect.style.width = "120px";
+        durationSelect.style.padding = "6px 8px";
+        durationSelect.style.fontSize = "12px";
+        durationSelect.innerHTML = `
+          <option value="permanent" selected>${currentLang === "en" ? "Permanent" : "دائم"}</option>
+          <option value="30">30 ${currentLang === "en" ? "Mins" : "دقيقة"}</option>
+          <option value="120">2 ${currentLang === "en" ? "Hours" : "ساعتان"}</option>
+          <option value="1440">1 ${currentLang === "en" ? "Day" : "يوم"}</option>
+        `;
 
         const approveBtn = document.createElement("button");
         approveBtn.className = "btn btn-primary btn-sm";
         approveBtn.style.padding = "6px 14px";
-        approveBtn.textContent = currentLang === "en" ? "Approve & Whitelist ✅" : "قبول وفك الحظر ✅";
-        approveBtn.addEventListener("click", () => approveRequest(req.url, index));
+        approveBtn.textContent = currentLang === "en" ? "Approve ✅" : "قبول ✅";
+        approveBtn.addEventListener("click", () => approveRequest(req.url, index, durationSelect.value));
 
         const rejectBtn = document.createElement("button");
         rejectBtn.className = "btn btn-secondary btn-sm";
@@ -778,6 +916,7 @@ document.addEventListener("DOMContentLoaded", () => {
         rejectBtn.textContent = currentLang === "en" ? "Reject ❌" : "رفض ❌";
         rejectBtn.addEventListener("click", () => rejectRequest(index));
 
+        actions.appendChild(durationSelect);
         actions.appendChild(approveBtn);
         actions.appendChild(rejectBtn);
 
@@ -789,26 +928,36 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   // قبول طلب استثناء (إضافته للقائمة البيضاء وحذف الطلب)
-  function approveRequest(url, index) {
+  function approveRequest(url, index, duration = "permanent") {
     const domain = extractDomain(url);
     if (!domain) return;
 
-    chrome.storage.local.get(["exceptionsList", "exceptionRequests"], (result) => {
+    chrome.storage.local.get(["exceptionsList", "exceptionRequests", "exceptionsExpiries"], (result) => {
       let exceptions = result.exceptionsList || [];
       let requests = result.exceptionRequests || [];
+      let expiries = result.exceptionsExpiries || {};
 
       if (!exceptions.includes(domain)) {
         exceptions.push(domain);
       }
+
+      if (duration !== "permanent") {
+        const mins = parseInt(duration);
+        expiries[domain] = Date.now() + (mins * 60 * 1000);
+      } else {
+        delete expiries[domain];
+      }
+
       requests.splice(index, 1);
 
       chrome.storage.local.set({
         exceptionsList: exceptions,
-        exceptionRequests: requests
+        exceptionRequests: requests,
+        exceptionsExpiries: expiries
       }, () => {
         loadExceptionRequests();
         loadExceptionsList();
-        showToast(`تم قبول الطلب وفك الحظر عن ${domain}.`);
+        showToast(duration !== "permanent" ? `تم فك الحظر مؤقتاً عن ${domain} لمدة ${duration} دقيقة.` : `تم قبول الطلب وفك الحظر دائمًا عن ${domain}.`);
       });
     });
   }
@@ -1089,12 +1238,34 @@ document.addEventListener("DOMContentLoaded", () => {
   // التبويب 3: قائمة الاستثناءات (الوايت ليست)
   // ═══════════════════════════════════════════════════════════════
   function loadExceptionsList() {
-    chrome.storage.local.get(["exceptionsList"], (result) => {
-      const exceptions = result.exceptionsList || [];
+    chrome.storage.local.get(["exceptionsList", "exceptionsExpiries"], (result) => {
+      let exceptions = result.exceptionsList || [];
+      let expiries = result.exceptionsExpiries || {};
       const container = document.getElementById("exceptions-list-container");
       const emptyDiv = document.getElementById("exceptions-empty");
 
       container.innerHTML = "";
+
+      let hasExpired = false;
+      const now = Date.now();
+
+      // فلترة منتهية الصلاحية
+      exceptions = exceptions.filter(site => {
+        const expiry = expiries[site];
+        if (expiry && now > expiry) {
+          delete expiries[site];
+          hasExpired = true;
+          return false;
+        }
+        return true;
+      });
+
+      if (hasExpired) {
+        chrome.storage.local.set({
+          exceptionsList: exceptions,
+          exceptionsExpiries: expiries
+        });
+      }
 
       if (exceptions.length === 0) {
         emptyDiv.style.display = "block";
@@ -1107,7 +1278,18 @@ document.addEventListener("DOMContentLoaded", () => {
         div.className = "exception-item";
 
         const span = document.createElement("span");
-        span.textContent = site;
+        
+        // حساب الوقت المتبقي إذا كان مؤقتاً
+        const expiry = expiries[site];
+        if (expiry) {
+          const minLeft = Math.ceil((expiry - now) / 60000);
+          const timeText = currentLang === "en" 
+            ? ` (Temporary: ${minLeft}m remaining)` 
+            : ` (مؤقت: يتبقى ${minLeft} دقيقة)`;
+          span.innerHTML = `${site} <span style="font-size:11px; color:#f59e0b; font-weight:bold;">${timeText}</span>`;
+        } else {
+          span.textContent = site;
+        }
 
         const delBtn = document.createElement("button");
         delBtn.className = "delete-btn";
@@ -1124,36 +1306,62 @@ document.addEventListener("DOMContentLoaded", () => {
   // إضافة استثناء
   document.getElementById("btn-add-exception").addEventListener("click", () => {
     const input = document.getElementById("exception-input");
+    const durationSelect = document.getElementById("select-exception-duration");
     const site = extractDomain(input.value);
+    const duration = durationSelect ? durationSelect.value : "permanent";
 
     if (!site) {
       showToast("يرجى إدخال رابط أو دومين صحيح.", false);
       return;
     }
 
-    chrome.storage.local.get(["exceptionsList"], (result) => {
+    chrome.storage.local.get(["exceptionsList", "exceptionsExpiries"], (result) => {
       let exceptions = result.exceptionsList || [];
+      let expiries = result.exceptionsExpiries || {};
+
       if (exceptions.includes(site)) {
         showToast("الموقع مضاف بالفعل في قائمة الاستثناءات.", false);
         return;
       }
 
       exceptions.push(site);
-      chrome.storage.local.set({ exceptionsList: exceptions }, () => {
+
+      if (duration !== "permanent") {
+        const mins = parseInt(duration);
+        expiries[site] = Date.now() + (mins * 60 * 1000);
+      } else {
+        delete expiries[site];
+      }
+
+      chrome.storage.local.set({ 
+        exceptionsList: exceptions,
+        exceptionsExpiries: expiries
+      }, () => {
         input.value = "";
         loadExceptionsList();
-        showToast(`تمت إضافة ${site} إلى القائمة البيضاء.`);
+        showToast(duration !== "permanent" 
+          ? `تمت إضافة ${site} للوايت ليست مؤقتاً لمدة ${duration} دقيقة.` 
+          : `تمت إضافة ${site} إلى القائمة البيضاء.`);
       });
     });
   });
 
   // حذف استثناء
   function deleteException(index) {
-    chrome.storage.local.get(["exceptionsList"], (result) => {
+    chrome.storage.local.get(["exceptionsList", "exceptionsExpiries"], (result) => {
       let exceptions = result.exceptionsList || [];
-      exceptions.splice(index, 1);
+      let expiries = result.exceptionsExpiries || {};
+      const site = exceptions[index];
 
-      chrome.storage.local.set({ exceptionsList: exceptions }, () => {
+      exceptions.splice(index, 1);
+      if (site) {
+        delete expiries[site];
+      }
+
+      chrome.storage.local.set({ 
+        exceptionsList: exceptions,
+        exceptionsExpiries: expiries
+      }, () => {
         loadExceptionsList();
         showToast("تمت إزالة الاستثناء.");
       });
@@ -1327,6 +1535,119 @@ document.addEventListener("DOMContentLoaded", () => {
       });
     }
 
+    // --- مستمعي التصفية البصرية ---
+    const toggleBlurEnabled = document.getElementById("toggle-blur-enabled");
+    if (toggleBlurEnabled) {
+      toggleBlurEnabled.addEventListener("change", (e) => {
+        const enabled = e.target.checked;
+        chrome.storage.local.set({ blurEnabled: enabled }, () => {
+          notifyBlurSettingsUpdated();
+          showToast(enabled ? "تم تفعيل التصفية البصرية بنجاح." : "تم تعطيل التصفية البصرية.");
+        });
+      });
+    }
+
+    const selectBlurSensitivity = document.getElementById("select-blur-sensitivity");
+    if (selectBlurSensitivity) {
+      selectBlurSensitivity.addEventListener("change", (e) => {
+        const sens = e.target.value;
+        chrome.storage.local.set({ blurSensitivity: sens }, () => {
+          notifyBlurSettingsUpdated();
+          showToast("تم تحديث حساسية التصفية البصرية.");
+        });
+      });
+    }
+
+    const inputBlurRadius = document.getElementById("input-blur-radius");
+    const blurRadiusValue = document.getElementById("blur-radius-value");
+    if (inputBlurRadius && blurRadiusValue) {
+      inputBlurRadius.addEventListener("input", (e) => {
+        const val = e.target.value;
+        blurRadiusValue.textContent = `${val}px`;
+      });
+      inputBlurRadius.addEventListener("change", (e) => {
+        const val = parseInt(e.target.value);
+        chrome.storage.local.set({ blurRadius: val }, () => {
+          notifyBlurSettingsUpdated();
+          showToast("تم تحديث قوة التضبيب.");
+        });
+      });
+    }
+
+    const toggleBlurGrayscale = document.getElementById("toggle-blur-grayscale");
+    if (toggleBlurGrayscale) {
+      toggleBlurGrayscale.addEventListener("change", (e) => {
+        const enabled = e.target.checked;
+        chrome.storage.local.set({ blurGrayscale: enabled }, () => {
+          notifyBlurSettingsUpdated();
+          showToast(enabled ? "تم تفعيل تدرج الرمادي للصور المحجوبة." : "تم تعطيل تدرج الرمادي للصور المحجوبة.");
+        });
+      });
+    }
+
+    const btnResetBlurStats = document.getElementById("btn-reset-blur-stats");
+    if (btnResetBlurStats) {
+      btnResetBlurStats.addEventListener("click", () => {
+        chrome.storage.local.set({
+          blurStatsTotal: 0,
+          blurStatsBlocked: 0,
+          blurStatsCache: 0
+        }, () => {
+          loadBlurSettings();
+          showToast("تم تصفير إحصائيات التصفية البصرية بنجاح.");
+        });
+      });
+    }
+
+    const btnAddBlurWhitelist = document.getElementById("btn-add-blur-whitelist");
+    if (btnAddBlurWhitelist) {
+      btnAddBlurWhitelist.addEventListener("click", () => {
+        const input = document.getElementById("blur-whitelist-input");
+        const site = extractDomain(input.value);
+        if (!site) {
+          showToast("يرجى إدخال رابط أو دومين صحيح.", false);
+          return;
+        }
+
+        chrome.storage.local.get(["blurWhitelist"], (result) => {
+          let whitelist = result.blurWhitelist || [];
+          if (whitelist.includes(site)) {
+            showToast("الموقع مضاف بالفعل في الاستثناءات.", false);
+            return;
+          }
+
+          whitelist.push(site);
+          chrome.storage.local.set({ blurWhitelist: whitelist }, () => {
+            input.value = "";
+            renderBlurWhitelist(whitelist);
+            notifyBlurSettingsUpdated();
+            showToast(`تمت إضافة ${site} إلى الاستثناءات البصرية.`);
+          });
+        });
+      });
+    }
+
+    const blurWhitelistInput = document.getElementById("blur-whitelist-input");
+    if (blurWhitelistInput) {
+      blurWhitelistInput.addEventListener("keypress", (e) => {
+        if (e.key === "Enter") btnAddBlurWhitelist.click();
+      });
+    }
+
+    const btnSaveCloudConfig = document.getElementById("btn-save-cloud-config");
+    if (btnSaveCloudConfig) {
+      btnSaveCloudConfig.addEventListener("click", () => {
+        saveCloudSettings();
+      });
+    }
+
+    const btnTestCloudConfig = document.getElementById("btn-test-cloud-config");
+    if (btnTestCloudConfig) {
+      btnTestCloudConfig.addEventListener("click", () => {
+        testCloudConfig();
+      });
+    }
+
   // تسجيل الخروج التلقائي عند إغلاق التبويب
   window.addEventListener("beforeunload", () => {
     chrome.storage.local.set({ dashboardLoggedIn: false });
@@ -1358,5 +1679,345 @@ document.addEventListener("DOMContentLoaded", () => {
           display.scrollTop = display.scrollHeight; // النزول التلقائي للأسفل
         }
       }
+    });
+  }
+
+  // --- دوال إدارة التصفية البصرية ---
+  function loadBlurSettings() {
+    chrome.storage.local.get(["blurEnabled", "blurSensitivity", "blurWhitelist", "blurStatsTotal", "blurStatsBlocked", "blurStatsCache", "blurRadius", "blurGrayscale"], (data) => {
+      const enabled = data.blurEnabled ?? false;
+      const sensitivity = data.blurSensitivity ?? "standard";
+      const whitelist = data.blurWhitelist || [];
+      const total = data.blurStatsTotal ?? 0;
+      const blocked = data.blurStatsBlocked ?? 0;
+      const cacheHits = data.blurStatsCache ?? 0;
+      const radius = data.blurRadius ?? 30;
+      const grayscale = data.blurGrayscale ?? true;
+
+      const toggle = document.getElementById("toggle-blur-enabled");
+      if (toggle) toggle.checked = enabled;
+
+      const select = document.getElementById("select-blur-sensitivity");
+      if (select) select.value = sensitivity;
+
+      const totalEl = document.getElementById("stats-blur-total");
+      if (totalEl) totalEl.textContent = total;
+
+      const blockedEl = document.getElementById("stats-blur-blocked");
+      if (blockedEl) blockedEl.textContent = blocked;
+
+      const cacheEl = document.getElementById("stats-blur-cache");
+      if (cacheEl) cacheEl.textContent = cacheHits;
+
+      // تحديث شريط قوة التضبيب
+      const slider = document.getElementById("input-blur-radius");
+      if (slider) slider.value = radius;
+
+      const sliderVal = document.getElementById("blur-radius-value");
+      if (sliderVal) sliderVal.textContent = `${radius}px`;
+
+      // تحديث مفتاح تدرج الرمادي
+      const grayToggle = document.getElementById("toggle-blur-grayscale");
+      if (grayToggle) grayToggle.checked = grayscale;
+
+      renderBlurWhitelist(whitelist);
+    });
+  }
+
+  function renderBlurWhitelist(whitelist) {
+    const container = document.getElementById("blur-whitelist-container");
+    const emptyDiv = document.getElementById("blur-whitelist-empty");
+    if (!container || !emptyDiv) return;
+
+    container.innerHTML = "";
+
+    if (whitelist.length === 0) {
+      emptyDiv.style.display = "block";
+      return;
+    }
+    emptyDiv.style.display = "none";
+
+    whitelist.forEach((site, index) => {
+      const div = document.createElement("div");
+      div.className = "exception-item";
+
+      const span = document.createElement("span");
+      span.textContent = site;
+
+      const delBtn = document.createElement("button");
+      delBtn.className = "delete-btn";
+      delBtn.textContent = "حذف ❌";
+      delBtn.addEventListener("click", () => deleteBlurWhitelist(index));
+
+      div.appendChild(span);
+      div.appendChild(delBtn);
+      container.appendChild(div);
+    });
+  }
+
+  function deleteBlurWhitelist(index) {
+    chrome.storage.local.get(["blurWhitelist"], (result) => {
+      let whitelist = result.blurWhitelist || [];
+      whitelist.splice(index, 1);
+      chrome.storage.local.set({ blurWhitelist: whitelist }, () => {
+        renderBlurWhitelist(whitelist);
+        notifyBlurSettingsUpdated();
+        showToast("تمت إزالة الاستثناء البصري.");
+      });
+    });
+  }
+
+  function notifyBlurSettingsUpdated() {
+    chrome.storage.local.get(["blurEnabled", "blurSensitivity", "blurWhitelist", "blurRadius", "blurGrayscale"], (data) => {
+      chrome.runtime.sendMessage({
+        type: "BLUR_SETTINGS_UPDATED",
+        settings: {
+          blurEnabled: data.blurEnabled ?? false,
+          blurSensitivity: data.blurSensitivity ?? "standard",
+          blurWhitelist: data.blurWhitelist ?? [],
+          blurRadius: data.blurRadius ?? 30,
+          blurGrayscale: data.blurGrayscale ?? true
+        }
+      });
+    });
+  }
+
+  // --- دالة رسم المخطط البياني التفاعلي للمحاولات المحجوبة ---
+  function drawAnalyticsChart() {
+    const canvas = document.getElementById("analytics-chart");
+    if (!canvas) return;
+
+    // ضبط دقة الرسم لتفادي التشوش على شاشات Retina/High-DPI
+    const rect = canvas.getBoundingClientRect();
+    const dpr = window.devicePixelRatio || 1;
+    canvas.width = rect.width * dpr;
+    canvas.height = rect.height * dpr;
+
+    const ctx = canvas.getContext("2d");
+    ctx.scale(dpr, dpr);
+
+    chrome.storage.local.get(["activityLog"], (result) => {
+      const logs = result.activityLog || [];
+
+      // توليد آخر 7 أيام
+      const days = [];
+      const counts = [];
+      const labels = [];
+      
+      const now = new Date();
+      for (let i = 6; i >= 0; i--) {
+        const d = new Date(now.getFullYear(), now.getMonth(), now.getDate() - i);
+        days.push(d);
+        counts.push(0);
+
+        // تنسيق الاسم e.g. "7/8"
+        labels.push(`${d.getMonth() + 1}/${d.getDate()}`);
+      }
+
+      // تجميع أعداد المحاولات لكل يوم
+      logs.forEach(log => {
+        const logDate = log.timeObject ? new Date(log.timeObject) : (log.timestamp ? new Date(log.timestamp) : null);
+        if (!logDate || isNaN(logDate.getTime())) return;
+
+        for (let i = 0; i < 7; i++) {
+          const d = days[i];
+          if (logDate.getDate() === d.getDate() &&
+              logDate.getMonth() === d.getMonth() &&
+              logDate.getFullYear() === d.getFullYear()) {
+            counts[i]++;
+            break;
+          }
+        }
+      });
+
+      // أبعاد الرسم البياني
+      const width = rect.width;
+      const height = rect.height;
+      const paddingLeft = 35;
+      const paddingRight = 15;
+      const paddingTop = 20;
+      const paddingBottom = 25;
+
+      const chartWidth = width - paddingLeft - paddingRight;
+      const chartHeight = height - paddingTop - paddingBottom;
+
+      // مسح الكانفاس
+      ctx.clearRect(0, 0, width, height);
+
+      // إيجاد الحد الأقصى للمحاولات لضبط مقياس الرسم (5 كحد أدنى)
+      const maxCount = Math.max(...counts, 5);
+      const yTicks = 4;
+
+      // رسم خطوط الشبكة الأفقية وقيم محور Y
+      ctx.strokeStyle = "rgba(255, 255, 255, 0.05)";
+      ctx.lineWidth = 1;
+      ctx.fillStyle = "rgba(148, 163, 184, 0.6)"; // text-muted
+      ctx.font = "10px Outfit, Cairo, sans-serif";
+      ctx.textAlign = "right";
+      ctx.textBaseline = "middle";
+
+      for (let i = 0; i <= yTicks; i++) {
+        const yVal = Math.round((maxCount / yTicks) * i);
+        const yPos = paddingTop + chartHeight - (chartHeight * (i / yTicks));
+        
+        ctx.beginPath();
+        ctx.moveTo(paddingLeft, yPos);
+        ctx.lineTo(width - paddingRight, yPos);
+        ctx.stroke();
+
+        ctx.fillText(yVal, paddingLeft - 8, yPos);
+      }
+
+      // رسم تسميات الأيام على محور X
+      ctx.textAlign = "center";
+      ctx.textBaseline = "top";
+      const xInterval = chartWidth / 6;
+
+      days.forEach((d, i) => {
+        const xPos = paddingLeft + (i * xInterval);
+        ctx.fillText(labels[i], xPos, height - paddingBottom + 8);
+      });
+
+      // حساب إحداثيات النقاط
+      const points = [];
+      days.forEach((d, i) => {
+        const xPos = paddingLeft + (i * xInterval);
+        const yPos = paddingTop + chartHeight - (chartHeight * (counts[i] / maxCount));
+        points.push({ x: xPos, y: yPos });
+      });
+
+      // رسم تظليل متدرج (Gradient Area Fill) تحت الخط
+      const gradient = ctx.createLinearGradient(0, paddingTop, 0, height - paddingBottom);
+      gradient.addColorStop(0, "rgba(20, 184, 166, 0.3)"); // accent-hover transparent
+      gradient.addColorStop(1, "rgba(20, 184, 166, 0.0)");
+
+      ctx.fillStyle = gradient;
+      ctx.beginPath();
+      ctx.moveTo(points[0].x, height - paddingBottom);
+      points.forEach(p => {
+        ctx.lineTo(p.x, p.y);
+      });
+      ctx.lineTo(points[points.length - 1].x, height - paddingBottom);
+      ctx.closePath();
+      ctx.fill();
+
+      // رسم الخط البياني الرئيسي ( glowing neon line )
+      ctx.strokeStyle = "#14b8a6"; // accent-hover
+      ctx.lineWidth = 3;
+      ctx.lineJoin = "round";
+      ctx.lineCap = "round";
+      ctx.shadowColor = "rgba(20, 184, 166, 0.4)";
+      ctx.shadowBlur = 6;
+
+      ctx.beginPath();
+      ctx.moveTo(points[0].x, points[0].y);
+      for (let i = 1; i < points.length; i++) {
+        ctx.lineTo(points[i].x, points[i].y);
+      }
+      ctx.stroke();
+
+      // إيقاف تأثير الوهج لرسم الدوائر والأرقام بوضوح
+      ctx.shadowBlur = 0;
+      ctx.shadowColor = "transparent";
+
+      // رسم النقاط الدائرية (Dots) والأرقام
+      points.forEach((p, i) => {
+        ctx.fillStyle = "#0d9488"; // Accent
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, 5, 0, Math.PI * 2);
+        ctx.fill();
+
+        ctx.fillStyle = "#ffffff";
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, 2, 0, Math.PI * 2);
+        ctx.fill();
+        
+        // عرض الرقم فوق النقطة إذا كان أكبر من 0 لسهولة القراءة
+        if (counts[i] > 0) {
+          ctx.fillStyle = "#2dd4bf";
+          ctx.font = "bold 10px Outfit, Cairo, sans-serif";
+          ctx.textAlign = "center";
+          ctx.fillText(counts[i], p.x, p.y - 12);
+        }
+      });
+    });
+  }
+
+  // --- دوال التحكم السحابي ---
+  function loadCloudSettings() {
+    chrome.storage.local.get(["cloudEnabled", "firebaseUrl", "telegramToken", "telegramChatId", "parentSecret"], (data) => {
+      const enabled = data.cloudEnabled ?? false;
+      const firebaseUrl = data.firebaseUrl || "";
+      const telegramToken = data.telegramToken || "";
+      const telegramChatId = data.telegramChatId || "";
+      const parentSecret = data.parentSecret || "";
+
+      const toggle = document.getElementById("toggle-cloud-enabled");
+      if (toggle) toggle.checked = enabled;
+
+      const inputUrl = document.getElementById("input-firebase-url");
+      if (inputUrl) inputUrl.value = firebaseUrl;
+
+      const inputToken = document.getElementById("input-telegram-token");
+      if (inputToken) inputToken.value = telegramToken;
+
+      const inputChatId = document.getElementById("input-telegram-chat-id");
+      if (inputChatId) inputChatId.value = telegramChatId;
+
+      const inputSecret = document.getElementById("input-parent-secret");
+      if (inputSecret) inputSecret.value = parentSecret;
+    });
+  }
+
+  function saveCloudSettings() {
+    const enabled = document.getElementById("toggle-cloud-enabled").checked;
+    const firebaseUrl = document.getElementById("input-firebase-url").value.trim();
+    const telegramToken = document.getElementById("input-telegram-token").value.trim();
+    const telegramChatId = document.getElementById("input-telegram-chat-id").value.trim();
+    const parentSecret = document.getElementById("input-parent-secret").value.trim();
+
+    chrome.storage.local.set({
+      cloudEnabled: enabled,
+      firebaseUrl: firebaseUrl,
+      telegramToken: telegramToken,
+      telegramChatId: telegramChatId,
+      parentSecret: parentSecret
+    }, () => {
+      chrome.runtime.sendMessage({ type: 'CLOUD_SETTINGS_UPDATED' });
+      showToast("تم حفظ الإعدادات السحابية بنجاح.");
+    });
+  }
+
+  function testCloudConfig() {
+    const token = document.getElementById("input-telegram-token").value.trim();
+    const chatId = document.getElementById("input-telegram-chat-id").value.trim();
+
+    if (!token || !chatId) {
+      showToast("يرجى إدخال التوكن ومعرف الشات أولاً.", false);
+      return;
+    }
+
+    showToast("جاري إرسال الرسالة التجريبية...");
+
+    const url = `https://api.telegram.org/bot${token}/sendMessage`;
+    fetch(url, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        chat_id: chatId,
+        text: "🛡️ *درع الفطرة: اختبار اتصال ناجح!*\n\nالبوت متصل بنجاح بلوحة تحكم الآباء وجاهز لتلقي طلبات طفلك.",
+        parse_mode: "Markdown"
+      })
+    })
+    .then(res => res.json())
+    .then(data => {
+      if (data.ok) {
+        showToast("تم إرسال الرسالة التجريبية بنجاح! تفقد تليجرام.");
+      } else {
+        showToast(`فشل الإرسال: ${data.description}`, false);
+      }
+    })
+    .catch(err => {
+      showToast(`خطأ في الاتصال: ${err.message}`, false);
     });
   }
