@@ -1675,6 +1675,23 @@ document.addEventListener("DOMContentLoaded", () => {
       });
     }
 
+    const btnToggleGuide = document.getElementById("btn-toggle-guide");
+    const guideContent = document.getElementById("guide-content");
+    const guideToggleIcon = document.getElementById("guide-toggle-icon");
+    if (btnToggleGuide && guideContent && guideToggleIcon) {
+      btnToggleGuide.addEventListener("click", () => {
+        if (guideContent.style.display === "none") {
+          guideContent.style.display = "block";
+          guideToggleIcon.textContent = "▲";
+          guideToggleIcon.style.transform = "rotate(180deg)";
+        } else {
+          guideContent.style.display = "none";
+          guideToggleIcon.textContent = "▼";
+          guideToggleIcon.style.transform = "rotate(0deg)";
+        }
+      });
+    }
+
   // الاستماع لتغييرات حالة تسجيل الدخول من البوب آب في الخلفية
   chrome.storage.onChanged.addListener((changes, area) => {
     if (area === "local" && changes.dashboardLoggedIn) {

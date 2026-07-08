@@ -1711,27 +1711,69 @@
         </p>
       </div>
 
-      <!-- 2. كارت الدليل الإرشادي للأب -->
-      <div class="card" style="margin-bottom: 20px; background: rgba(13, 148, 136, 0.03);">
-        <h4 style="color:var(--accent-hover); margin-bottom:12px; font-size:15px; font-weight:700;">📋 دليل إعداد النظام في 3 خطوات بسيطة:</h4>
-        <div class="dns-grid" style="grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap:15px; display:grid;">
-          <div class="dns-server-box" style="padding:15px; text-align:right;">
-            <div class="dns-name" style="color:var(--accent-light);">1. أنشئ بوت تليجرام 🤖</div>
-            <div style="font-size:12px; color:var(--text-muted); margin-top:6px; line-height:1.5;">
-              ابحث عن <a href="https://t.me/BotFather" target="_blank" style="color:var(--accent-hover); font-weight:bold; text-decoration:none;">@BotFather</a> في تليجرام وأرسل <code>/newbot</code>، اتبع الخطوات لإنشاء البوت وانسخ الـ <strong>Token</strong>.
+      <!-- 2. كارت الدليل الإرشادي للأب (تفاعلي وقابل للتوسيع) -->
+      <div class="card" style="margin-bottom: 20px;">
+        <div id="btn-toggle-guide" style="display:flex; justify-content:space-between; align-items:center; cursor:pointer;">
+          <h4 style="color:var(--accent-hover); margin:0; font-size:15px; font-weight:700; display:inline-flex; align-items:center; gap:8px;">
+            📖 دليل إعداد التنبيهات والموافقة السحابية بالخطوات (اضغط للتفاصيل)
+          </h4>
+          <span id="guide-toggle-icon" style="font-size:16px; transition: transform 0.2s ease; display:inline-block;">▼</span>
+        </div>
+        
+        <div id="guide-content" style="display:none; margin-top:20px; border-top:1px solid var(--card-border); padding-top:20px;">
+          <!-- Steps Layout -->
+          <div class="steps-container" style="display:flex; flex-direction:column; gap:20px;">
+            
+            <!-- Step 1 -->
+            <div style="display:flex; gap:15px;">
+              <div style="background:var(--accent); color:#fff; width:32px; height:32px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-weight:bold; flex-shrink:0;">١</div>
+              <div>
+                <h5 style="margin:0 0 6px 0; color:var(--text-color); font-size:14px; font-weight:700;">إنشاء بوت تليجرام وتلقي التوكن (Telegram Bot Token)</h5>
+                <p style="margin:0; font-size:12px; color:var(--text-muted); line-height:1.6;">
+                  ١. افتح تطبيق تليجرام وابحث عن الحساب الرسمي لإنشاء البوتات: <a href="https://t.me/BotFather" target="_blank" style="color:var(--accent-hover); font-weight:bold; text-decoration:none;">@BotFather</a>.<br>
+                  ٢. اضغط على <strong>Start (ابدأ)</strong> ثم أرسل الأمر <code>/newbot</code>.<br>
+                  ٣. سيطلب منك اختيار اسم للبوت (مثال: <code>درع الفطرة</code>) ثم اسم مستخدم للبوت ينتهي بكلمة <code>bot</code> (مثال: <code>MyFitraShield_bot</code>).<br>
+                  ٤. بعد الانتهاء، سيرسل لك رسالة تحتوي على رمز طويل يسمى <strong>HTTP API Token</strong> (مثال: <code>123456:ABC-def...</code>). قم بنسخه وحفظه في خانة "توكن بوت تليجرام" أدناه.<br>
+                  ٥. <strong>خطوة هامة جداً:</strong> انقر على رابط البوت الخاص بك في الرسالة واضغط على زر <strong>ابدأ (Start)</strong> لتفعيل البوت وبدء المحادثة.
+                </p>
+              </div>
             </div>
-          </div>
-          <div class="dns-server-box" style="padding:15px; text-align:right;">
-            <div class="dns-name" style="color:var(--accent-light);">2. احصل على معرف الشات 🆔</div>
-            <div style="font-size:12px; color:var(--text-muted); margin-top:6px; line-height:1.5;">
-              ابحث عن <a href="https://t.me/userinfobot" target="_blank" style="color:var(--accent-hover); font-weight:bold; text-decoration:none;">@userinfobot</a> في تليجرام واضغط <strong>Start</strong> للحصول على معرّف الشات (<strong>Chat ID</strong>) الخاص بك.
+
+            <!-- Step 2 -->
+            <div style="display:flex; gap:15px;">
+              <div style="background:var(--accent); color:#fff; width:32px; height:32px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-weight:bold; flex-shrink:0;">٢</div>
+              <div>
+                <h5 style="margin:0 0 6px 0; color:var(--text-color); font-size:14px; font-weight:700;">الحصول على معرف الدردشة الخاص بك (Telegram Chat ID)</h5>
+                <p style="margin:0; font-size:12px; color:var(--text-muted); line-height:1.6;">
+                  ١. ابحث في تليجرام عن حساب معرفة الهوية الآمن: <a href="https://t.me/userinfobot" target="_blank" style="color:var(--accent-hover); font-weight:bold; text-decoration:none;">@userinfobot</a>.<br>
+                  ٢. اضغط على <strong>Start</strong> وسيقوم فوراً بالرد عليك برسالة تحتوي على معرّفك الرقمي (مثال: <code>6028358331</code>).<br>
+                  ٣. قم بنسخ هذا الرقم وضعه في خانة "معرف دردشة تليجرام للأب" أدناه لتلقي الإشعارات عليه.
+                </p>
+              </div>
             </div>
-          </div>
-          <div class="dns-server-box" style="padding:15px; text-align:right;">
-            <div class="dns-name" style="color:var(--accent-light);">3. أنشئ قاعدة Firebase 🔥</div>
-            <div style="font-size:12px; color:var(--text-muted); margin-top:6px; line-height:1.5;">
-              افتح <a href="https://console.firebase.google.com/" target="_blank" style="color:var(--accent-hover); font-weight:bold; text-decoration:none;">Firebase Console</a>، أنشئ مشروعاً مجانياً وقاعدة بيانات <strong>Realtime Database</strong> في وضع الاختبار وانسخ رابطها.
+
+            <!-- Step 3 -->
+            <div style="display:flex; gap:15px;">
+              <div style="background:var(--accent); color:#fff; width:32px; height:32px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-weight:bold; flex-shrink:0;">٣</div>
+              <div>
+                <h5 style="margin:0 0 6px 0; color:var(--text-color); font-size:14px; font-weight:700;">إنشاء قاعدة بيانات Firebase المجانية وضبط الصلاحيات (مهم جداً)</h5>
+                <p style="margin:0; font-size:12px; color:var(--text-muted); line-height:1.6;">
+                  ١. توجه إلى منصة مطوري جوجل: <a href="https://console.firebase.google.com/" target="_blank" style="color:var(--accent-hover); font-weight:bold; text-decoration:none;">Firebase Console</a> وسجل دخولك بحساب Gmail.<br>
+                  ٢. اضغط على <strong>Add Project</strong>، اختر اسماً للمشروع (مثال: <code>FitraShield</code>) واضغط متابعة حتى يتم الإنشاء.<br>
+                  ٣. من القائمة الجانبية اختر <strong>Build</strong> ثم <strong>Realtime Database</strong>، واضغط على زر <strong>Create Database</strong>.<br>
+                  ٤. اختر موقع الخادم (الافتراضي مناسب) ثم اختر البدء في <strong>وضع الاختبار (Test Mode)</strong> للتجربة.<br>
+                  ٥. انسخ الرابط الذي يظهر في الأعلى (يبدأ بـ <code>https://</code> وينتهي بـ <code>.firebaseio.com/</code>) وضعه في خانة "رابط قاعدة بيانات Firebase" أدناه.<br>
+                  ٦. <strong>تعديل قواعد الأمان (Rules):</strong> اذهب لتبويب <strong>Rules</strong> في الأعلى، واستبدل الكود الموجود بالكود التالي للسماح للإضافة بالقراءة والكتابة سحابياً، ثم اضغط <strong>Publish</strong>:
+                </p>
+                <pre style="background:var(--input-bg); color:var(--text-color); padding:10px; border-radius:6px; font-size:11px; text-align:left; direction:ltr; margin-top:8px; border:1px solid var(--card-border); overflow-x:auto;"><code>{
+  "rules": {
+    ".read": true,
+    ".write": true
+  }
+}</code></pre>
+              </div>
             </div>
+
           </div>
         </div>
       </div>
