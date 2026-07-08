@@ -4,8 +4,8 @@
  */
 
 importScripts(
-  chrome.runtime.getURL('lib/tf.min.js'),
-  chrome.runtime.getURL('lib/nsfwjs.min.js')
+  self.location.origin + '/lib/tf.min.js',
+  self.location.origin + '/lib/nsfwjs.min.js'
 );
 
 let model = null;
@@ -28,7 +28,7 @@ async function ensureModelLoaded() {
 
   modelLoading = true;
   try {
-    const modelURL = chrome.runtime.getURL('model/model.json');
+    const modelURL = self.location.origin + '/model/';
     // تحميل النموذج المحلي بنجاح
     model = await nsfwjs.load(modelURL, { size: 224 });
     modelLoading = false;
