@@ -28,9 +28,9 @@ const FitraBlurEngine = (() => {
 
   // ---- عتبات تصنيف NSFWJS ----
   const SENSITIVITY_THRESHOLDS = {
-    strict:   { Porn: 0.5, Hentai: 0.5, Sexy: 0.4 },
-    standard: { Porn: 0.7, Hentai: 0.7, Sexy: 0.95 },
-    relaxed:  { Porn: 0.85, Hentai: 0.85, Sexy: 0.99 }
+    strict:   { Porn: 0.3, Hentai: 0.3, Sexy: 0.3 },
+    standard: { Porn: 0.45, Hentai: 0.45, Sexy: 0.55 },
+    relaxed:  { Porn: 0.65, Hentai: 0.65, Sexy: 0.85 }
   };
 
   // تطبيق قيم CSS المخصصة بناءً على إعدادات الوالدين
