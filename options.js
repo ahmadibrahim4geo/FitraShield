@@ -1648,6 +1648,33 @@ document.addEventListener("DOMContentLoaded", () => {
       });
     }
 
+    const btnToggleSecret = document.getElementById("btn-toggle-secret");
+    const inputParentSecret = document.getElementById("input-parent-secret");
+    if (btnToggleSecret && inputParentSecret) {
+      btnToggleSecret.addEventListener("click", () => {
+        if (inputParentSecret.type === "password") {
+          inputParentSecret.type = "text";
+          btnToggleSecret.textContent = "🙈 إخفاء";
+        } else {
+          inputParentSecret.type = "password";
+          btnToggleSecret.textContent = "👁️ عرض";
+        }
+      });
+    }
+
+    const btnGenerateSecret = document.getElementById("btn-generate-secret");
+    if (btnGenerateSecret && inputParentSecret) {
+      btnGenerateSecret.addEventListener("click", () => {
+        const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+        let pass = "";
+        for (let i = 0; i < 16; i++) {
+          pass += chars.charAt(Math.floor(Math.random() * chars.length));
+        }
+        inputParentSecret.value = pass;
+        showToast("تم توليد رمز أمان سري جديد. يرجى الضغط على حفظ لتطبيقه!");
+      });
+    }
+
   // الاستماع لتغييرات حالة تسجيل الدخول من البوب آب في الخلفية
   chrome.storage.onChanged.addListener((changes, area) => {
     if (area === "local" && changes.dashboardLoggedIn) {
@@ -1939,6 +1966,28 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   // --- دوال التحكم السحابي ---
+  function updateCloudStatusDisplay(enabled, firebaseUrl, telegramToken, telegramChatId) {
+    const statusText = document.getElementById("cloud-status-text");
+    const statusDot = document.getElementById("cloud-status-dot");
+    if (!statusText || !statusDot) return;
+
+    const hasConfig = firebaseUrl && telegramToken && telegramChatId;
+
+    if (enabled && hasConfig) {
+      statusText.textContent = "التحكم السحابي نشط ومتصل 🟢";
+      statusText.style.color = "#2dd4bf";
+      statusDot.style.background = "#2dd4bf";
+    } else if (enabled) {
+      statusText.textContent = "مفعل ولكن الإعدادات غير مكتملة ⚠️";
+      statusText.style.color = "#f59e0b";
+      statusDot.style.background = "#f59e0b";
+    } else {
+      statusText.textContent = "التحكم السحابي معطل 🔴";
+      statusText.style.color = "#f87171";
+      statusDot.style.background = "#f87171";
+    }
+  }
+
   function loadCloudSettings() {
     chrome.storage.local.get(["cloudEnabled", "firebaseUrl", "telegramToken", "telegramChatId", "parentSecret"], (data) => {
       const enabled = data.cloudEnabled ?? false;
@@ -1961,6 +2010,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
       const inputSecret = document.getElementById("input-parent-secret");
       if (inputSecret) inputSecret.value = parentSecret;
+
+      updateCloudStatusDisplay(enabled, firebaseUrl, telegramToken, telegramChatId);
     });
   }
 
@@ -1979,6 +2030,7 @@ document.addEventListener("DOMContentLoaded", () => {
       parentSecret: parentSecret
     }, () => {
       chrome.runtime.sendMessage({ type: 'CLOUD_SETTINGS_UPDATED' });
+      updateCloudStatusDisplay(enabled, firebaseUrl, telegramToken, telegramChatId);
       showToast("تم حفظ الإعدادات السحابية بنجاح.");
     });
   }

@@ -1695,16 +1695,56 @@
     </div>
 
     <!-- ═══════════ التبويب 9: التحكم السحابي والموافقة عن بعد ═══════════ -->
+    <!-- ═══════════ التبويب 9: التحكم السحابي والموافقة عن بعد ═══════════ -->
     <div id="content-cloud" class="tab-content">
-      <div class="card">
-        <h3 class="card-title">☁️ التحكم السحابي والموافقة عن بعد</h3>
-        <p class="card-desc">يسمح هذا النظام للطفل بإرسال طلبات فك الحظر السحابية للوالدين لتلقي إشعار فوري على تليجرام والموافقة بنقرة واحدة من أي مكان مجاناً.</p>
+      <!-- 1. كارت الحالة والتعريف -->
+      <div class="card" style="margin-bottom: 20px; border-right: 4px solid var(--accent);">
+        <div style="display:flex; justify-content:space-between; align-items:center;">
+          <h3 class="card-title" style="margin:0;">☁️ حالة التحكم السحابي</h3>
+          <span id="cloud-status-text" style="font-weight:700; font-size:13px; color:var(--text-muted); background:var(--input-bg); padding:6px 12px; border-radius:30px; display:inline-flex; align-items:center; gap:8px;">
+            <span id="cloud-status-dot" style="width:8px; height:8px; border-radius:50%; background:var(--text-muted); display:inline-block;"></span>
+            جاري التحميل...
+          </span>
+        </div>
+        <p class="card-desc" style="margin-top: 10px;">
+          يسمح هذا النظام السحابي لطفلك بإرسال طلبات فك الحظر مباشرة إلى هاتفك لتلقي تنبيه فوري على تطبيق تليجرام والموافقة بنقرة واحدة من أي مكان مجاناً 100% دون خوادم مدفوعة.
+        </p>
+      </div>
 
+      <!-- 2. كارت الدليل الإرشادي للأب -->
+      <div class="card" style="margin-bottom: 20px; background: rgba(13, 148, 136, 0.03);">
+        <h4 style="color:var(--accent-hover); margin-bottom:12px; font-size:15px; font-weight:700;">📋 دليل إعداد النظام في 3 خطوات بسيطة:</h4>
+        <div class="dns-grid" style="grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap:15px; display:grid;">
+          <div class="dns-server-box" style="padding:15px; text-align:right;">
+            <div class="dns-name" style="color:var(--accent-light);">1. أنشئ بوت تليجرام 🤖</div>
+            <div style="font-size:12px; color:var(--text-muted); margin-top:6px; line-height:1.5;">
+              ابحث عن <a href="https://t.me/BotFather" target="_blank" style="color:var(--accent-hover); font-weight:bold; text-decoration:none;">@BotFather</a> في تليجرام وأرسل <code>/newbot</code>، اتبع الخطوات لإنشاء البوت وانسخ الـ <strong>Token</strong>.
+            </div>
+          </div>
+          <div class="dns-server-box" style="padding:15px; text-align:right;">
+            <div class="dns-name" style="color:var(--accent-light);">2. احصل على معرف الشات 🆔</div>
+            <div style="font-size:12px; color:var(--text-muted); margin-top:6px; line-height:1.5;">
+              ابحث عن <a href="https://t.me/userinfobot" target="_blank" style="color:var(--accent-hover); font-weight:bold; text-decoration:none;">@userinfobot</a> في تليجرام واضغط <strong>Start</strong> للحصول على معرّف الشات (<strong>Chat ID</strong>) الخاص بك.
+            </div>
+          </div>
+          <div class="dns-server-box" style="padding:15px; text-align:right;">
+            <div class="dns-name" style="color:var(--accent-light);">3. أنشئ قاعدة Firebase 🔥</div>
+            <div style="font-size:12px; color:var(--text-muted); margin-top:6px; line-height:1.5;">
+              افتح <a href="https://console.firebase.google.com/" target="_blank" style="color:var(--accent-hover); font-weight:bold; text-decoration:none;">Firebase Console</a>، أنشئ مشروعاً مجانياً وقاعدة بيانات <strong>Realtime Database</strong> في وضع الاختبار وانسخ رابطها.
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 3. كارت الإعدادات وحقول الإدخال -->
+      <div class="card">
+        <h3 class="card-title">⚙️ بيانات الربط السحابي</h3>
+        
         <!-- خيار تفعيل التحكم السحابي -->
-        <div class="setting-row">
+        <div class="setting-row" style="border-bottom:1px solid var(--card-border); padding-bottom:15px; margin-bottom:20px;">
           <div class="setting-info">
             <div class="setting-label">تفعيل نظام التحكم عن بعد (Remote Approval)</div>
-            <div class="setting-desc">السماح بإرسال طلبات الاستثناء إلى قاعدة بيانات Firebase وتليجرام الوالد</div>
+            <div class="setting-desc">تفعيل التنبيهات السحابية الفورية على هاتف الوالدين واستقبال الطلبات</div>
           </div>
           <label class="toggle-switch">
             <input type="checkbox" id="toggle-cloud-enabled">
@@ -1713,32 +1753,49 @@
         </div>
 
         <!-- حقول إعدادات Firebase -->
-        <div class="form-group" style="margin-top: 20px;">
-          <label class="form-label" style="display:block; margin-bottom:6px; font-weight:700;">رابط قاعدة بيانات Firebase (Realtime Database URL):</label>
+        <div class="form-group" style="margin-top: 15px;">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
+            <label class="form-label" style="font-weight:700; margin:0;">رابط قاعدة بيانات Firebase (Realtime Database URL):</label>
+            <span style="font-size:11px; color:var(--text-muted);">رابط قاعدة البيانات التي أنشأتها</span>
+          </div>
           <input type="text" id="input-firebase-url" class="form-input" placeholder="https://your-project-default-rtdb.firebaseio.com" style="text-align:left; direction:ltr; width:100%;">
         </div>
 
-        <!-- حقول إعدادات Telegram -->
+        <!-- حقول إعدادات Telegram Token -->
         <div class="form-group" style="margin-top: 15px;">
-          <label class="form-label" style="display:block; margin-bottom:6px; font-weight:700;">توكن بوت تليجرام (Telegram Bot Token):</label>
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
+            <label class="form-label" style="font-weight:700; margin:0;">توكن بوت تليجرام (Telegram Bot Token):</label>
+            <span style="font-size:11px; color:var(--text-muted);">الرمز المنسوخ من BotFather للتحكم بالبوت</span>
+          </div>
           <input type="text" id="input-telegram-token" class="form-input" placeholder="123456789:ABCdefGh..." style="text-align:left; direction:ltr; width:100%;">
         </div>
 
+        <!-- حقول إعدادات Telegram Chat ID -->
         <div class="form-group" style="margin-top: 15px;">
-          <label class="form-label" style="display:block; margin-bottom:6px; font-weight:700;">معرف دردشة تليجرام للأب (Telegram Chat ID):</label>
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
+            <label class="form-label" style="font-weight:700; margin:0;">معرف دردشة تليجرام للأب (Telegram Chat ID):</label>
+            <span style="font-size:11px; color:var(--text-muted);">معرّف حسابك الشخصي في تليجرام المأخوذ من userinfobot</span>
+          </div>
           <input type="text" id="input-telegram-chat-id" class="form-input" placeholder="6028358331" style="text-align:left; direction:ltr; width:100%;">
         </div>
 
         <!-- رمز الأمان السري للتحقق -->
         <div class="form-group" style="margin-top: 15px;">
-          <label class="form-label" style="display:block; margin-bottom:6px; font-weight:700;">رمز الأمان السري للأب (Secret Verification Token):</label>
-          <input type="password" id="input-parent-secret" class="form-input" placeholder="أدخل رمز سري عشوائي لمنع الاختراق" style="width:100%;">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
+            <label class="form-label" style="font-weight:700; margin:0;">رمز الأمان السري للأب (Secret Verification Token):</label>
+            <span style="font-size:11px; color:var(--text-muted);">رمز أمان مخصص تضعه لحماية الروابط من التخمين أو التلاعب</span>
+          </div>
+          <div style="display:flex; gap:8px;">
+            <input type="password" id="input-parent-secret" class="form-input" placeholder="أدخل رمز حماية سري قوي" style="flex:1;">
+            <button id="btn-toggle-secret" class="btn btn-secondary" style="width:auto; padding:0 14px; font-size:12px;">👁️ عرض</button>
+            <button id="btn-generate-secret" class="btn btn-secondary" style="width:auto; padding:0 14px; font-size:12px;">🎲 توليد عشوائي</button>
+          </div>
         </div>
 
         <!-- أزرار الإجراءات -->
-        <div style="display:flex; gap:12px; margin-top:24px;">
-          <button id="btn-save-cloud-config" class="btn btn-primary" style="flex:1;">حفظ الإعدادات السحابية 💾</button>
-          <button id="btn-test-cloud-config" class="btn btn-secondary" style="width:auto; padding:0 24px;">إرسال رسالة تجريبية 🧪</button>
+        <div style="display:flex; gap:12px; margin-top:24px; border-top:1px solid var(--card-border); padding-top:20px;">
+          <button id="btn-save-cloud-config" class="btn btn-primary" style="flex:1; font-weight:bold; font-size:15px;">حفظ الإعدادات السحابية 💾</button>
+          <button id="btn-test-cloud-config" class="btn btn-secondary" style="width:auto; padding:0 24px; font-size:14px;">إرسال رسالة تجريبية 🧪</button>
         </div>
       </div>
     </div>
