@@ -503,7 +503,7 @@ const FitraBlurEngine = (() => {
           });
         });
 
-        // 2. مراقبة تغيير السمات (مثل تغيير src أو srcset ديناميكياً)
+        // 2. مراقبة تغيير السمات (مثل تغيير src أو srcset أو إزالة سمة الحجب)
         if (mutation.type === 'attributes' && mutation.target.tagName === 'IMG') {
           const img = mutation.target;
           if (mutation.attributeName === 'src' || mutation.attributeName === 'srcset') {
@@ -511,6 +511,18 @@ const FitraBlurEngine = (() => {
             img.removeAttribute('data-fs-status');
             img.removeAttribute('data-fs-overlay');
             InspectionQueue.enqueue(img);
+          } else if (mutation.attributeName === 'data-fs-status') {
+            // إذا قام كود الموقع بإزالة حالة الحجب الخاصة بنا، أعد فرضها فوراً من الكاش لمنع كشف الصورة
+            const currentStatus = img.dataset.fsStatus;
+            const src = img.src;
+            if (!currentStatus && src && sessionCache.has(src)) {
+              const cached = sessionCache.get(src);
+              if (cached === 'BLOCK') {
+                applyPermanentBlur(img);
+              } else if (cached === 'ALLOW') {
+                removePendingBlur(img);
+              }
+            }
           }
         }
       });
@@ -520,7 +532,7 @@ const FitraBlurEngine = (() => {
       childList: true,
       subtree: true,
       attributes: true,
-      attributeFilter: ['src', 'srcset']
+      attributeFilter: ['src', 'srcset', 'data-fs-status']
     });
   }
 
