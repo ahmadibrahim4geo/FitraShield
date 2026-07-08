@@ -1648,11 +1648,6 @@ document.addEventListener("DOMContentLoaded", () => {
       });
     }
 
-  // تسجيل الخروج التلقائي عند إغلاق التبويب
-  window.addEventListener("beforeunload", () => {
-    chrome.storage.local.set({ dashboardLoggedIn: false });
-  });
-
   // الاستماع لتغييرات حالة تسجيل الدخول من البوب آب في الخلفية
   chrome.storage.onChanged.addListener((changes, area) => {
     if (area === "local" && changes.dashboardLoggedIn) {
